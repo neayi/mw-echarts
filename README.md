@@ -1,4 +1,4 @@
-Apache ECharts for MediaWiki
+# Apache ECharts for MediaWiki
 
 Apache Echarts is a powerful charting environment. This extension allows to make full use of it in your MediaWiki setups.
 
