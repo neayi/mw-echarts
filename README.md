@@ -12,7 +12,8 @@ Add `wfLoadExtension( 'ECharts' );` in your `LocalSettings.php`
 Build your chart in the [Apache Echarts editor](https://echarts.apache.org/examples/en/editor.html?c=bar-stack), then copy the code and paste it in your wiki page, surrounding with `{{#echarts: yourcode }}`
 
 NB : your code should only contain the `option = { ... }` declaration. It should not contain constants or other functions declarations.
-Also, make sure your code does not contain double curly braces `{{` or `}}` (just add spaces between them), otherwise mediawiki will be very confused about where does the echarts parser function starts and end.
+
+Also, make sure your code does not contain double curly braces `{{` or `}}` (just add spaces between them), otherwise mediawiki will be very confused about where does the echarts parser function start and end.
 
 ## Size and alignment
 By default your charts will have a 100% width and 400px height. You can customize that by using:
