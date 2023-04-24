@@ -1,0 +1,69 @@
+{
+	"name": "ECharts",
+	"version": "1.0",
+	"author": [
+		"[https://www.mediawiki.org/wiki/User:BertrandGorge Bertrand Gorge]"
+	],
+	"url": "https://www.mediawiki.org/wiki/Extension:ECharts",
+	"descriptionmsg": "ECharts-desc",
+	"manifest_version": 1,
+	"type": "parserhook",
+	"license-name": "MIT",
+	"requires": {
+		"MediaWiki": ">= 1.35.0"
+	},
+	"MessagesDirs": {
+		"ECharts": [
+			"i18n"
+		]
+	},
+	"ResourceModules": {
+		"ext.mwecharts": {
+			"scripts": [
+				"mw.echarts.js"
+			],
+			"dependencies": [
+				"jquery.ui"
+			],
+			"targets": [
+				"desktop",
+				"mobile"
+			],
+			"messages": [
+			]
+		},
+		"ext.echarts": {
+			"localBasePath": "modules/ext.echarts",
+			"remoteExtPath": "ECharts/echarts/ext.echarts",
+			"styles": [
+
+			],
+			"packageFiles": [
+				"echarts.min.js"
+			]
+		}
+	},
+	"ResourceFileModulePaths": {
+		"localBasePath": "resources",
+		"remoteExtPath": "ECharts/resources"
+	},
+	"AutoloadNamespaces": {
+		"MediaWiki\\Extension\\ECharts\\": "includes/"
+	},
+	"APIModules": {
+
+	},
+	"HookHandlers": {
+		"EChartsHooks": {
+			"class": "MediaWiki\\Extension\\ECharts\\EChartsHooks"
+		}
+	},
+	"Hooks": {
+		"ParserFirstCallInit": "EChartsHooks"
+	},
+	"ExtensionMessagesFiles": {
+		"EChartsMagic": "ECharts.i18n.magic.php"
+	},
+	"config": {
+	}
+}
