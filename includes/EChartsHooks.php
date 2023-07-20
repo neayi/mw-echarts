@@ -146,18 +146,47 @@ class EChartsHooks implements
 
 		$width = '100%';
 		$height = '400px';
-		$container_classes = '';
 
-		$json_parts = array();
+		// Define an array of valid parameter keys
+		$validParameters = [
+			"Aides", 
+			"Chiffre d'affaire", 
+			"DPU, DPB", 
+			"Vente autres produits", 
+			"Vente de produits végétaux", 
+			"Prélèvements privés", 
+			"EBE", 
+			"Salariés", 
+			"Cotisations salariés", 
+			"Cotisations exploitants", 
+			"Carburant", 
+			"Entretien matériel", 
+			"Eau, gaz, électricité", 
+			"Frais de gestion", 
+			"Certification", 
+			"Fermage", 
+			"Assurances", 
+			"Autres", 
+			"Fournitures diverses", 
+			"Travaux par tiers", 
+			"Bâches et voiles", 
+			"Produits de traitements", 
+			"Terreau", 
+			"Achat des légumes (revente)", 
+			"Fertilisation (MO)", 
+			"Semences et plants", // Add any other valid parameters here
+		];
 
 		// try to find a few specific parameters to the template call:
 		foreach ($args as $k => $v)
 		{
 			$parts = explode('=', $v);
-
 			$key = trim($parts[0]);
 
-			switch (strtolower($key)) {
+			$paramYearParts = explode(' ', $key);
+        	$param = $paramYearParts[0];
+
+			switch (strtolower($param)) {
 				case 'width':
 					$width = $parts[1];
 					if (strpos($width, 'px') === false)
@@ -176,13 +205,15 @@ class EChartsHooks implements
 					{
 						$year = $matches[0];
 						$param = trim(str_replace($year, '', $key));
-						$parameters[$year][$param] = $parts[1];
+						$parameters[$year][$param] = str_replace(',', '.', $parts[1]);
 					}
-
+					if (!in_array($param, $validParameters)) {
+						$ret = "Ce paramètre n'est pas reconnu : $key";
+						return $ret;
+					}
 					break;
 			}
 		}
-
 
 		$thisId = self::$id++;
 
