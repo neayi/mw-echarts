@@ -54,11 +54,18 @@ var ECharts_controller = (function () {
 			$('.echarts_economical_div').each(function (element) {
 
 				var option = "";
+
+				eval("option = " + this.textContent);
+
 				var drilldownData = "";
 
-				eval(this.textContent);
+        		this.textContent = '';
 
-				this.textContent = '';
+				// Retrieve the JSON data from the hidden HTML element
+				var drilldownDataElement = document.getElementById('drilldownData_' + this.id.split('_')[1]);
+    			if (drilldownDataElement) {
+        			drilldownData = JSON.parse(drilldownDataElement.textContent);
+    			}
 
 				if (!option) {
 					console.log("ECharts: the JSON could not be parsed. Make sure it starts and end with curly braces : { your json }");
@@ -186,10 +193,10 @@ var ECharts_controller = (function () {
 						}))
 					},
 					{
-						name: "Détail Chiffre d'affaire",
+						name: "Chiffre d'affaire",
 						itemStyle: { color: '#88A8CB', borderWidth: 1 },
 						label: { show: true, position: 'inside' },
-						children: data["Détail Chiffre d'affaire"].map((item) => ({
+						children: data["Chiffre d'affaire"].map((item) => ({
 							name: `${item.name}\n${item.value[0]} €`,
 							value: item.value
 						}))

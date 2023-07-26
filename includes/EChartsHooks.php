@@ -147,19 +147,23 @@ class EChartsHooks implements
 		$width = '100%';
 		$height = '400px';
 
-		// Define an array of valid parameter keys
-		$validParameters = [
-			"Aides", 
-			"Chiffre d'affaire", 
-			"DPU, DPB", 
-			"Vente autres produits", 
-			"Vente de produits végétaux", 
-			"Prélèvements privés", 
-			"EBE", 
-			"Salariés", 
-			"Cotisations salariés", 
-			"Cotisations exploitants", 
-			"Carburant", 
+		// Define an array of valid parameters for "Produits" bar
+		$validParametersProduits = [
+		    "Aides", 
+		    "Chiffre d'affaire", 
+		    "DPU, DPB", 
+		    "Vente autres produits", 
+		    "Vente de produits végétaux",
+		];
+
+		// Define an array of valid parameters for "Charges" bar
+		$validParametersCharges = [
+		    "Prélèvements privés", 
+		    "EBE", 
+		    "Salariés", 
+		    "Cotisations salariés", 
+		    "Cotisations exploitants", 
+		    "Carburant",
 			"Entretien matériel", 
 			"Eau, gaz, électricité", 
 			"Frais de gestion", 
@@ -174,7 +178,7 @@ class EChartsHooks implements
 			"Terreau", 
 			"Achat des légumes (revente)", 
 			"Fertilisation (MO)", 
-			"Semences et plants", // Add any other valid parameters here
+			"Semences et plants",
 		];
 
 		// try to find a few specific parameters to the template call:
@@ -201,15 +205,18 @@ class EChartsHooks implements
 
 				default:
 					$matches = array();
-					if (preg_match('/[0-9]{4}/', $key, $matches))
-					{
+					if (preg_match('/[0-9]{4}/', $key, $matches)) {
 						$year = $matches[0];
 						$param = trim(str_replace($year, '', $key));
-						$parameters[$year][$param] = str_replace(',', '.', $parts[1]);
-					}
-					if (!in_array($param, $validParameters)) {
-						$ret = "Ce paramètre n'est pas reconnu : $key";
-						return $ret;
+						// Check if the parameter belongs to "Produits" or "Charges" bar
+						if (in_array($param, $validParametersProduits)) {
+							$parameters[$year][$param] = str_replace(',', '.', $parts[1]);
+						} elseif (in_array($param, $validParametersCharges)) {
+							$parameters[$year][$param] = str_replace(',', '.', $parts[1]);
+						} else {
+							$ret = "Ce paramètre n'est pas reconnu : $key";
+							return $ret;
+						}
 					}
 					break;
 			}
@@ -217,689 +224,157 @@ class EChartsHooks implements
 
 		$thisId = self::$id++;
 
-		$JS = <<<'JS_HERE'
-		option = {
-			tooltip: {},
-			title: {
-			  text: "Evolution du bilan financier",
-			  subtext : "Cliquer sur une barre pour voir le détail",
-			  textAlign: 'center',
-			  left: '50%'
-			},
-			xAxis: {
-			  type: 'category',
-			  data: ['2016', '2017', '2018', '2019', '2020']
-			},
-			yAxis: {
-			  type: 'value',
-			  axisLabel: {
-				formatter: '{value} €'
-			  }
-			},
-			series: [
-			  {
-				type: 'bar',
-				id: 'produits',
-				name: 'Produits',
-				data: [
-				  { value: 29600, groupId: '2016' },
-				  { value: 40750, groupId: '2017' },
-				  { value: 30418, groupId: '2018' },
-				  { value: 45649, groupId: '2019' },
-				  { value: 63779, groupId: '2020' }
-				]
-			  },
-			  {
-				type: 'bar',
-				id: 'charges',
-				name: 'Charges',
-				data: [
-				  { value: 34484, groupId: '2016' },
-				  { value: 49140, groupId: '2017' },
-				  { value: 41888, groupId: '2018' },
-				  { value: 56504, groupId: '2019' },
-				  { value: 85607, groupId: '2020' }
-				],
-			  }
-			]
-		  };
+		// Extract the years from the $parameters array
+		$years = array_keys($parameters);
 
-		  drilldownData = [
-			{
-			  dataGroupId: '2016',
-			  data: [
-				{
-				  name: 'DPU, DPB',
-				  typeDeDonnee: 'Aides',
-				  value: [500]
-				},
-				{
-				  name: 'Vente autres produits',
-				  typeDeDonnee: "Détail Chiffre d'affaire",
-				  value: [650]
-				},
-				{
-				  name: 'Vente de produits végétaux',
-				  typeDeDonnee: "Détail Chiffre d'affaire",
-				  value: [71096]
-				},
-				{
-				  name: 'Prélèvements privés',
-				  typeDeDonnee: 'EBE',
-				  value: [29264.25]
-				},
-				{
-				  name: 'EBE',
-				  typeDeDonnee: 'EBE',
-				  value: [13869]
-				},
-				{
-				  name: 'Salariés',
-				  typeDeDonnee: 'Charges de personnels',
-				  value: [770]
-				},
-				{
-				  name: 'Cotisations salariés',
-				  typeDeDonnee: 'Charges de personnels',
-				  value: [0]
-				},
-				{
-				  name: 'Cotisations exploitants',
-				  typeDeDonnee: 'Charges de personnels',
-				  value: [0]
-				},
-				{
-				  name: 'Carburant',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [700]
-				},
-				{
-				  name: 'Entretien matériel',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [1000]
-				},
-				{
-				  name: 'Eau, gaz, électricité',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [50]
-				},
-				{
-				  name: 'Frais de gestion',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [200]
-				},
-				{
-				  name: 'Certification',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [400]
-				},
-				{
-				  name: 'Fermage',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [4000]
-				},
-				{
-				  name: 'Assurances',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [600]
-				},
-				{
-				  name: 'Autres',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [3000]
-				},
-				{
-				  name: 'Fournitures diverses',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [1000]
-				},
-				{
-				  name: 'Travaux par tiers',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [550]
-				},
-				{
-				  name: 'Bâches et voiles',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [1500]
-				},
-				{
-				  name: 'Produits de traitements',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [123]
-				},
-				{
-				  name: 'Terreau',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [0]
-				},
-				{
-				  name: 'Achat des légumes',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [3000]
-				},
-				{
-				  name: 'Fertilisation',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [118]
-				},
-				{
-				  name: 'Semences et plants',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [3604]
-				}
-			  ]
-			},
-			{
-			  dataGroupId: '2017',
-			  data: [
-				{
-				  name: 'DPU, DPB',
-				  typeDeDonnee: 'Aides',
-				  value: [500]
-				},
-				{
-				  name: 'Vente autres produits',
-				  typeDeDonnee: "Détail Chiffre d'affaire",
-				  value: [650]
-				},
-				{
-				  name: 'Vente de produits végétaux',
-				  typeDeDonnee: "Détail Chiffre d'affaire",
-				  value: [71096]
-				},
-				{
-				  name: 'Prélèvements privés',
-				  typeDeDonnee: 'EBE',
-				  value: [29264.25]
-				},
-				{
-				  name: 'EBE',
-				  typeDeDonnee: 'EBE',
-				  value: [25380]
-				},
-				{
-				  name: 'Salariés',
-				  typeDeDonnee: 'Charges de personnels',
-				  value: [0]
-				},
-				{
-				  name: 'Cotisations salariés',
-				  typeDeDonnee: 'Charges de personnels',
-				  value: [0]
-				},
-				{
-				  name: 'Cotisations exploitants',
-				  typeDeDonnee: 'Charges de personnels',
-				  value: [3000]
-				},
-				{
-				  name: 'Carburant',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [600]
-				},
-				{
-				  name: 'Entretien matériel',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [2000]
-				},
-				{
-				  name: 'Eau, gaz, électricité',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [1200]
-				},
-				{
-				  name: 'Frais de gestion',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [0]
-				},
-				{
-				  name: 'Certification',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [500]
-				},
-				{
-				  name: 'Fermage',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [3600]
-				},
-				{
-				  name: 'Assurances',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [800]
-				},
-				{
-				  name: 'Autres',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [1000]
-				},
-				{
-				  name: 'Fournitures diverses',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [200]
-				},
-				{
-				  name: 'Travaux par tiers',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [0]
-				},
-				{
-				  name: 'Bâches et voiles',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [0]
-				},
-				{
-				  name: 'Produits de traitements',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [0]
-				},
-				{
-				  name: 'Terreau',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [0]
-				},
-				{
-				  name: 'Achat des légumes',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [4940]
-				},
-				{
-				  name: 'Fertilisation',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [670]
-				},
-				{
-				  name: 'Semences et plants',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [5250]
-				}
-			  ]
-			},
-			{
-			  dataGroupId: '2018',
-			  data: [
-				{
-				  name: 'DPU, DPB',
-				  typeDeDonnee: 'Aides',
-				  value: [500]
-				},
-				{
-				  name: 'Vente autres produits',
-				  typeDeDonnee: "Détail Chiffre d'affaire",
-				  value: [650]
-				},
-				{
-				  name: 'Vente de produits végétaux',
-				  typeDeDonnee: "Détail Chiffre d'affaire",
-				  value: [71096]
-				},
-				{
-				  name: 'Prélèvements privés',
-				  typeDeDonnee: 'EBE',
-				  value: [29264.25]
-				},
-				{
-				  name: 'EBE',
-				  typeDeDonnee: 'EBE',
-				  value: [25543]
-				},
-				{
-				  name: 'Salariés',
-				  typeDeDonnee: 'Charges de personnels',
-				  value: [0]
-				},
-				{
-				  name: 'Cotisations salariés',
-				  typeDeDonnee: 'Charges de personnels',
-				  value: [0]
-				},
-				{
-				  name: 'Cotisations exploitants',
-				  typeDeDonnee: 'Charges de personnels',
-				  value: [600]
-				},
-				{
-				  name: 'Carburant',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [1137]
-				},
-				{
-				  name: 'Entretien matériel',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [919]
-				},
-				{
-				  name: 'Eau, gaz, électricité',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [912]
-				},
-				{
-				  name: 'Frais de gestion',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [170]
-				},
-				{
-				  name: 'Certification',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [500]
-				},
-				{
-				  name: 'Fermage',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [3000]
-				},
-				{
-				  name: 'Assurances',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [600]
-				},
-				{
-				  name: 'Autres',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [3800]
-				},
-				{
-				  name: 'Fournitures diverses',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [277]
-				},
-				{
-				  name: 'Travaux par tiers',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [0]
-				},
-				{
-				  name: 'Bâches et voiles',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [0]
-				},
-				{
-				  name: 'Produits de traitements',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [0]
-				},
-				{
-				  name: 'Terreau',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [0]
-				},
-				{
-				  name: 'Achat des légumes',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [730]
-				},
-				{
-				  name: 'Fertilisation',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [100]
-				},
-				{
-				  name: 'Semences et plants',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [3600]
-				}
-			  ]
-			},
-			{
-			  dataGroupId: '2019',
-			  data: [
-				{
-				  name: 'DPU, DPB',
-				  typeDeDonnee: 'Aides',
-				  value: [500]
-				},
-				{
-				  name: 'Vente autres produits',
-				  typeDeDonnee: "Détail Chiffre d'affaire",
-				  value: [650]
-				},
-				{
-				  name: 'Vente de produits végétaux',
-				  typeDeDonnee: "Détail Chiffre d'affaire",
-				  value: [71096]
-				},
-				{
-				  name: 'Prélèvements privés',
-				  typeDeDonnee: 'EBE',
-				  value: [29264.25]
-				},
-				{
-				  name: 'EBE',
-				  typeDeDonnee: 'EBE',
-				  value: [33919]
-				},
-				{
-				  name: 'Salariés',
-				  typeDeDonnee: 'Charges de personnels',
-				  value: [0]
-				},
-				{
-				  name: 'Cotisations salariés',
-				  typeDeDonnee: 'Charges de personnels',
-				  value: [0]
-				},
-				{
-				  name: 'Cotisations exploitants',
-				  typeDeDonnee: 'Charges de personnels',
-				  value: [600]
-				},
-				{
-				  name: 'Carburant',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [1338]
-				},
-				{
-				  name: 'Entretien matériel',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [2655]
-				},
-				{
-				  name: 'Eau, gaz, électricité',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [537]
-				},
-				{
-				  name: 'Frais de gestion',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [0]
-				},
-				{
-				  name: 'Certification',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [500]
-				},
-				{
-				  name: 'Fermage',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [990]
-				},
-				{
-				  name: 'Assurances',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [600]
-				},
-				{
-				  name: 'Autres',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [1475]
-				},
-				{
-				  name: 'Fournitures diverses',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [4534]
-				},
-				{
-				  name: 'Travaux par tiers',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [0]
-				},
-				{
-				  name: 'Bâches et voiles',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [0]
-				},
-				{
-				  name: 'Produits de traitements',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [0]
-				},
-				{
-				  name: 'Terreau',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [0]
-				},
-				{
-				  name: 'Achat des légumes',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [2393]
-				},
-				{
-				  name: 'Fertilisation',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [1000]
-				},
-				{
-				  name: 'Semences et plants',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [5963]
-				}
-			  ]
-			},
-			{
-			  dataGroupId: '2020',
-			  data: [
-				{
-				  name: 'DPU, DPB',
-				  typeDeDonnee: 'Aides',
-				  value: [500]
-				},
-				{
-				  name: 'Vente autres produits',
-				  typeDeDonnee: "Détail Chiffre d'affaire",
-				  value: [650]
-				},
-				{
-				  name: 'Vente de produits végétaux',
-				  typeDeDonnee: "Détail Chiffre d'affaire",
-				  value: [71096]
-				},
-				{
-				  name: 'Prélèvements privés',
-				  typeDeDonnee: 'EBE',
-				  value: [29264.25]
-				},
-				{
-				  name: 'EBE',
-				  typeDeDonnee: 'EBE',
-				  value: [53104]
-				},
-				{
-				  name: 'Salariés',
-				  typeDeDonnee: 'Charges de personnels',
-				  value: [0]
-				},
-				{
-				  name: 'Cotisations salariés',
-				  typeDeDonnee: 'Charges de personnels',
-				  value: [0]
-				},
-				{
-				  name: 'Cotisations exploitants',
-				  typeDeDonnee: 'Charges de personnels',
-				  value: [600]
-				},
-				{
-				  name: 'Carburant',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [502]
-				},
-				{
-				  name: 'Entretien matériel',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [1122]
-				},
-				{
-				  name: 'Eau, gaz, électricité',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [2327]
-				},
-				{
-				  name: 'Frais de gestion',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [555]
-				},
-				{
-				  name: 'Certification',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [500]
-				},
-				{
-				  name: 'Fermage',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [1007]
-				},
-				{
-				  name: 'Assurances',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [600]
-				},
-				{
-				  name: 'Autres',
-				  typeDeDonnee: 'Charges de structure',
-				  value: [2235]
-				},
-				{
-				  name: 'Fournitures diverses',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [12271]
-				},
-				{
-				  name: 'Travaux par tiers',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [145]
-				},
-				{
-				  name: 'Bâches et voiles',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [3600]
-				},
-				{
-				  name: 'Produits de traitements',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [0]
-				},
-				{
-				  name: 'Terreau',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [200]
-				},
-				{
-				  name: 'Achat des légumes',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [0]
-				},
-				{
-				  name: 'Fertilisation',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [240]
-				},
-				{
-				  name: 'Semences et plants',
-				  typeDeDonnee: 'Charges opérationnelles',
-				  value: [6599]
-				}
-			  ]
-			}
-		  ];
+		// Convert each year to a string
+		$years = array_map('strval', $years);
 
+		// initialize the drilldownData array
+		$drilldownData = [];
 
-JS_HERE;
+		// Loop through each year's data in $parameters
+		foreach ($parameters as $year => $data) {
+		    // Initialize the data array for the current year
+		    $yearData = [
+		        'dataGroupId' => (string) $year,
+		        'data' => [],
+		    ];
+		
+		    // Loop through each parameter's data for the current year
+		    foreach ($data as $param => $value) {
+		        // Determine the 'typeDeDonnee' based on the parameter name
+		        switch ($param) {
+		            case 'DPU, DPB':
+						case 'Aides':
+		                	$typeDeDonnee = 'Aides';
+		                	break;
+		            case 'Vente autres produits':
+		            case 'Vente de produits végétaux':
+		                $typeDeDonnee = 'Détail Chiffre d\'affaire';
+		                break;
+		            case "Chiffre d'affaire":
+		                $typeDeDonnee = "Chiffre d'affaire";
+		                break;
+		            case 'Prélèvements privés':
+		            case 'EBE':
+		                $typeDeDonnee = 'EBE';
+		                break;
+		            case 'Salariés':
+		            case 'Cotisations salariés':
+		            case 'Cotisations exploitants':
+		                $typeDeDonnee = 'Charges de personnels';
+		                break;
+		            case 'Carburant':
+		            case 'Entretien matériel':
+		            case 'Eau, gaz, électricité':
+		            case 'Frais de gestion':
+		            case 'Certification':
+		            case 'Fermage':
+		            case 'Assurances':
+		            case 'Autres':
+		                $typeDeDonnee = 'Charges de structure';
+		                break;
+		            default:
+		                $typeDeDonnee = 'Charges opérationnelles';
+		                break;
+		        }
+			
+		        // Create a new data entry for the parameter
+		        $paramData = [
+		            'name' => $param,
+		            'typeDeDonnee' => $typeDeDonnee,
+		            'value' => [(float) $value], // Assuming the value is a single value, you can adjust this accordingly
+		        ];
+			
+		        // Add the parameter data to the year's data array
+		        $yearData['data'][] = $paramData;
+		    }
+		
+		    // Add the year's data to the $drilldownData array
+		    $drilldownData[] = $yearData;
+		}
+
+		// Initialize arrays to store data for each bar
+		$produitsData = [];
+		$chargesData = [];
+
+		// Loop through $drilldownData to separate data for each bar
+		foreach ($drilldownData as $dataGroup) {
+		    $year = $dataGroup['dataGroupId'];
+		
+		    // Initialize variables to store the sum of products and charges for each year
+		    $sumProduits = 0;
+		    $sumCharges = 0;
+		
+		    foreach ($dataGroup['data'] as $data) {
+		        $name = $data['name'];
+		        $value = $data['value'][0];
+			
+		        // Check if the parameter belongs to "Produits" or "Charges" bar
+		        if (in_array($name, $validParametersProduits)) {
+		            // Accumulate the value for produits
+		            $sumProduits += (float) $value;
+		        } else {
+		            // Accumulate the value for charges
+		            $sumCharges += (float) $value;
+		        }
+		    }
+		
+		    // Store the sum of produits and charges in the respective arrays
+		    $produitsData[] = ['value' => $sumProduits, 'groupId' => $year ];
+		    $chargesData[] = ['value' => $sumCharges, 'groupId' => $year];
+		}
+
+		$emptyTooltip = (object) [];
+		$option = [
+		    "tooltip" => $emptyTooltip,
+		    "title" => [
+		        "text" => "Evolution du bilan financier",
+		        "subtext" => "Cliquer sur une barre pour voir le détail",
+		        "textAlign" => "center",
+		        "left" => "50%"
+		    ],
+		    "xAxis" => [
+		        "type" => "category",
+		        "data" => $years,
+		    ],
+		    "yAxis" => [
+		        "type" => "value",
+		        "axisLabel" => [
+		            "formatter" => "{value} €"
+		        ]
+		    ],
+		    "series" => [
+		        [
+		            "type" => "bar",
+		            "id" => "produits",
+		            "name" => "Produits",
+		            "data" => $produitsData,
+		        ],
+		        [
+		            "type" => "bar",
+		            "id" => "charges",
+		            "name" => "Charges",
+		            "data" => $chargesData,
+		        ]
+		    ]
+		];
+
+		// Convert the updated $option array to JSON format
+		$JS = json_encode($option, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+		$drilldownDataJSON = json_encode($drilldownData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+		$parameters = json_encode($parameters, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
 		$ret = '<div id="echart_'. $thisId . '_container"  style="width:'.$width.'; height:'.$height.'"><div id="echart_'. $thisId . '" class="echarts_economical_div" style="width:'.$width.'; height:'.$height.'; display:none;">'.$JS.'</div></div>';
 
+		$ret .= '<div id="drilldownData_' . $thisId . '" style="display:none;">' . htmlentities($drilldownDataJSON) . '</div>';
+
 		$ret .= 'Parameters : <pre>' . print_r($parameters, true) . '</pre>';
 
-		return [ $ret, 'noparse' => true, 'isHTML' => true ];
+		$ret .= 'drilldownData : <pre>' . print_r($drilldownDataJSON, true) . '</pre>';
 
+		return [ $ret, 'noparse' => true, 'isHTML' => true ];
 	}
 }
