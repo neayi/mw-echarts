@@ -156,7 +156,7 @@ class EChartsHooks implements
 			"Charges de structure" => ['color' => '#F5A893', 'stack' => "Charges"],
 			"Charges de personnel" => ['color' => '#FDCF74', 'stack' => "Charges"],
 			"EBE" => ['color' => '#F8B26D', 'stack' => "Charges"],
-			"Prélèvements privés" => ['color' => '#DB8129', 'stack' => "Charges"],
+//			"Prélèvements privés" => ['color' => '#DB8129', 'stack' => "Charges"],
 		];
 
 		// Define an array of valid parameters for "Produits" bar
@@ -277,8 +277,13 @@ class EChartsHooks implements
 		{
 			$series = [
 				"type" => "bar",
-				'itemStyle'=> [
+				'itemStyle' => [
 					'color' => $aCategory['color']
+				],
+				'label' => [
+					'show' => true,
+					'position' => 'inside',
+					'formatter' => '{c} €'
 				],
       			'emphasis'=> [
 					'focus'=> 'series'
