@@ -146,25 +146,27 @@ class EChartsHooks implements
 		array_unshift($args, $value);
 
 		$width = '100%';
-		$height = '400px';
+		$height = '700px';
 
 		$mainCategories = [
-			"Aides" => ['color' => '#A4CC69', 'stack' => "Produits"],
-			"Chiffre d'affaire" => ['color' => '#88A8CB', 'stack' => "Produits"],
-			"Prélèvements privés" => ['color' => '#FEFBFA', 'stack' => "Charges"],
-			"EBE" => ['color' => '#F8B26D', 'stack' => "Charges"],
-			"Charges de personnel" => ['color' => '#FDCF74', 'stack' => "Charges"],
+			"Chiffre d'affaire" => ['color' => '#afd095', 'stack' => "Produits"],
+			"Aides" => ['color' => '#729fcf', 'stack' => "Produits"],
+
+			"Charges opérationnelles" => ['color' => '#F28960', 'stack' => "Charges"],
 			"Charges de structure" => ['color' => '#F5A893', 'stack' => "Charges"],
-			"Charges opérationnelles" => ['color' => '#F28960', 'stack' => "Charges"]
+			"Charges de personnel" => ['color' => '#FDCF74', 'stack' => "Charges"],
+			"EBE" => ['color' => '#F8B26D', 'stack' => "Charges"],
+			"Prélèvements privés" => ['color' => '#DB8129', 'stack' => "Charges"],
 		];
 
 		// Define an array of valid parameters for "Produits" bar
-		$parametersProduits = [
+		$parametersDefinition['Produits'] = [
 			"Aides" => "Aides",
 			"Autres aides" => "Aides",
 			"Aide à la certification" => "Aides",
 			"DPU, DPB" => "Aides",
 
+			"Chiffre d'affaire" => "Chiffre d'affaire",
 			"Vente autres produits" => "Chiffre d'affaire",
 			"Vente de produits végétaux" => "Chiffre d'affaire",
 			"Vente de marchandises (achat-revente)" => "Chiffre d'affaire",
@@ -175,12 +177,12 @@ class EChartsHooks implements
 		];
 
 		// Define an array of valid parameters for "Charges" bar
-		$parametersCharges = [
+		$parametersDefinition['Charges'] = [
 			"Prélèvements privés" => "EBE",
 			"EBE" => "EBE",
-			"Salariés" => "Charges de personnels",
-			"Cotisations salariés" => "Charges de personnels",
-			"Cotisations exploitants" => "Charges de personnels",
+			"Salariés" => "Charges de personnel",
+			"Cotisations salariés" => "Charges de personnel",
+			"Cotisations exploitants" => "Charges de personnel",
 			"Carburant" => "Charges de structure",
 			"Entretien matériel" => "Charges de structure",
 			"Eau, gaz, électricité" => "Charges de structure",
@@ -203,10 +205,9 @@ class EChartsHooks implements
 
 		// Build an array of valid paramters:
 		$validParameters = array();
-		foreach ($parametersProduits as $k => $v)
-			$validParameters[strtolower($k)] = $k;
-		foreach ($parametersCharges as $k => $v)
-			$validParameters[strtolower($k)] = $k;
+		foreach ($parametersDefinition as $parametersList)
+			foreach ($parametersList as $k => $v)
+				$validParameters[strtolower($k)] = $k;
 
 		// try to find a few specific parameters to the template call:
 		foreach ($args as $k => $v) {
@@ -244,86 +245,31 @@ class EChartsHooks implements
 						}
 
 						// Also replace commas with dots for the sake of json
-						$parameters[$year][$validParameters[$param]] = str_replace(',', '.', $parts[1]);
+						$parameters[$year][$validParameters[$param]] = (float)trim(str_replace(',', '.', $parts[1]));
 					}
 					break;
 			}
 		}
 
+		ksort($parameters);
+
 		$thisId = self::$id++;
 
-		// initialize the drilldownData array
-		$drilldownData = [];
-
-		// Loop through each year's data in $parameters
-		foreach ($parameters as $year => $data) {
-			// Initialize the data array for the current year
-			$yearData = [
-				'dataGroupId' => (string) $year
-			];
-
-			// Loop through each parameter's data for the current year
-			foreach ($data as $param => $value) {
-				$paramData = [
-					'name' => $param,
-					'typeDeDonnee' => $parametersCharges[$param] ?? $parametersProduits[$param],
-					'value' => [(float) $value], // Assuming the value is a single value, you can adjust this accordingly
-				];
-
-				// Add the parameter data to the year's data array
-				$yearData['data'][] = $paramData;
-			}
-
-			// Add the year's data to the $drilldownData array
-			$drilldownData[] = $yearData;
-		}
-
-		// Initialize arrays to store data for each bar
-		$produitsData = [];
-		$chargesData = [];
-
-		// Loop through $drilldownData to separate data for each bar
-		foreach ($drilldownData as $dataGroup) {
-			$year = $dataGroup['dataGroupId'];
-
-			// Initialize variables to store the sum of products and charges for each year
-			$sumProduits = 0;
-			$sumCharges = 0;
-
-			foreach ($dataGroup['data'] as $data) {
-				$name = $data['name'];
-				$value = $data['value'][0];
-
-				// Check if the parameter belongs to "Produits" or "Charges" bar
-				if (isset($parametersProduits[$name])) {
-					// Accumulate the value for produits
-					$sumProduits += (float) $value;
-				} else {
-					// Accumulate the value for charges
-					$sumCharges += (float) $value;
-				}
-			}
-
-			// Store the sum of produits and charges in the respective arrays
-			$produitsData[] = ['value' => $sumProduits];
-			$chargesData[] = ['value' => $sumCharges];
-		}
-
 		// Build the series:
-		// $mainCategories = [
-		// 	"Aides" => ['color' => '#A4CC69', 'stack' => "Produits"],
 		$stackBarSeries = [];
+
 		// Loop through each year's data in $parameters
+		$subSums = [];
 		foreach ($parameters as $year => $data) {
 
 			// Loop through each parameter's data for the current year
 			foreach ($data as $param => $value) {
-				$subCategory = $parametersCharges[$param] ?? $parametersProduits[$param];
+				$subCategory = $parametersDefinition['Charges'][$param] ?? $parametersDefinition['Produits'][$param];
 
-				if (!isset($parameters[$year][$subCategory]))
-					$parameters[$year][$subCategory] = 0;
+				if (!isset($subSums[$year][$subCategory]))
+					$subSums[$year][$subCategory] = 0;
 
-				$parameters[$year][$subCategory] += (float) $value;
+				$subSums[$year][$subCategory] += (float)$value;
 			}
 		}
 
@@ -331,17 +277,23 @@ class EChartsHooks implements
 		{
 			$series = [
 				"type" => "bar",
+				'itemStyle'=> [
+					'color' => $aCategory['color']
+				],
+      			'emphasis'=> [
+					'focus'=> 'series'
+					],
 				"name" => $name,
 				"stack" => $aCategory['stack'],
 				"id" => $name
 			];
 
 			$values = [];
-			foreach ($parameters as $year => $data) {
-				if (isset($data[$name]))
-					$values[] = ['value' =>  $data[$name], 'groupId' => $aCategory['stack']];
+			foreach ($parameters as $year => $v) {
+				if (isset($subSums[$year][$name]))
+					$values[] = ['groupId' => $aCategory['stack'], 'value' => $subSums[$year][$name]];
 				else
-					$values[] = ['value' => 0, 'groupId' => $aCategory['stack']];
+					$values[] = ['groupId' => $aCategory['stack'], 'value' => 0];
 			}
 
 			$series['data'] = $values;
@@ -368,20 +320,118 @@ class EChartsHooks implements
 					"formatter" => "{value} €"
 				]
 			],
+			'grid' => [ 'containLabel' => true ],
 			"series" => $stackBarSeries
 		];
+
+		// Now build the drilldown data (for the treemap)
+		$drilldownData = [];
+
+		// Loop through each year's data in $parameters
+		foreach ($parameters as $year => $data) {
+
+			$drilldownData[$year]['Produits'] = self::getTreeMapSeries("Produits $year");
+			$drilldownData[$year]['Charges'] = self::getTreeMapSeries("Charges $year");
+
+			foreach ($mainCategories as $name => $aCategory) {
+
+				foreach ($parametersDefinition as $l1Category => $paramsDefs)
+				{
+					if ($aCategory['stack'] == $l1Category)
+					{
+						$treeMapSubCategory = null;
+
+						foreach ($paramsDefs as $paramName => $mainCategory) {
+							if ($mainCategory != $name)
+								continue;
+
+							if (!empty($parameters[$year][$paramName]))
+							{
+								if (!$treeMapSubCategory)
+									$treeMapSubCategory = self::getTreeMapItem($name, 0, $aCategory['color'], 1); // For Aides
+
+								$treeMapSubCategory['children'][] = self::getTreeMapItem($paramName, $parameters[$year][$paramName]);
+								$treeMapSubCategory['value'] += $parameters[$year][$paramName];
+							}
+
+						}
+
+						if ($treeMapSubCategory)
+						{
+							self::addValueToName($treeMapSubCategory);
+
+							$drilldownData[$year][$l1Category]['data'][] = $treeMapSubCategory;
+							$drilldownData[$year][$l1Category]['value'] += $treeMapSubCategory['value'];
+						}
+					}
+				}
+			}
+
+			self::addValueToName($drilldownData[$year]['Produits']);
+			self::addValueToName($drilldownData[$year]['Charges']);
+		}
+
+		// Add a last check on the consistency of the data:
+		foreach ($drilldownData as $year => $data)
+		{
+			$ratio = $data['Produits']['value'] / $data['Charges']['value'];
+			if ($ratio < 0.9 || $ratio > 1.1)
+			{
+				$ret = "<pre>Attention, vos données pour $year ne sont pas équilibrées entre les produits et les charges.<br>NB : Si vous avez spécifié les prélévements privés, il faut les déduire de l'EBE !</pre>";
+				return $ret;
+			}
+		}
+
 
 		// Convert the updated $option array to JSON format
 		$JS = json_encode($option, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 		$drilldownDataJSON = json_encode($drilldownData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
-		$parameters = json_encode($parameters, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-
 		$ret = '<div id="echart_' . $thisId . '_container"  style="width:' . $width . '; height:' . $height . '"><div id="echart_' . $thisId . '" class="echarts_economical_div" style="width:' . $width . '; height:' . $height . '; display:none;">' . $JS . '</div></div>';
 		$ret .= '<div id="drilldownData_' . $thisId . '" style="display:none;">' . htmlentities($drilldownDataJSON) . '</div>';
-		$ret .= 'Parameters : <pre>' . print_r($parameters, true) . '</pre>';
-		$ret .= 'drilldownData : <pre>' . print_r($drilldownDataJSON, true) . '</pre>';
 
 		return [$ret, 'noparse' => true, 'isHTML' => true];
+	}
+
+	private static function getTreeMapSeries($name)
+	{
+		$item = [
+			'name' => $name,
+			'value' => 0,
+			'type' =>'treemap',
+			'breadcrumb' => [
+				'height' => 34,
+				'itemStyle'=> [ 'textStyle'=> [ 'lineHeight'=> 15 ] ]
+			],
+      		'data' => []
+		];
+
+		return $item;
+	}
+
+	private static function getTreeMapItem($name, $value = 0, $color = '', $borderWidth = 0)
+	{
+		$item = [
+			'name' => $name,
+			'value' => $value,
+			'label' => [
+				'show' => true,
+				'position' => 'inside',
+				'overflow' => 'break'
+			],
+			'children' => []
+		];
+
+		if (!empty($color))
+			$item['itemStyle']['color'] = $color;
+		if (!empty($borderWidth))
+			$item['itemStyle']['borderWidth'] = $borderWidth;
+
+		return $item;
+	}
+
+	private static function addValueToName(&$item)
+	{
+		$item['name'] .= "\n" . $item['value'] . ' €';
 	}
 }

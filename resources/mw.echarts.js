@@ -55,69 +55,62 @@ var ECharts_controller = (function () {
 
 			$('.echarts_economical_div').each(function (element) {
 
-				var option = "";
+				var stackedBarsOptions = "";
+				const formatUtil = echarts.format;
 
-				eval("option = " + this.textContent);
+				eval("stackedBarsOptions = " + this.textContent);
+				stackedBarsOptions['tooltip'] =
+				{
+					formatter: function (info) {
+						return info.seriesName + '<br>\n<b>' + info.value + ' €</b>';
+					}
+				};
 
 				var drilldownData = "";
 
-        		this.textContent = '';
+				this.textContent = '';
 
 				// Retrieve the JSON data from the hidden HTML element
 				var drilldownDataElement = document.getElementById('drilldownData_' + this.id.split('_')[1]);
-    			if (drilldownDataElement) {
-        			drilldownData = JSON.parse(drilldownDataElement.textContent);
-    			}
+				if (drilldownDataElement) {
+					drilldownData = JSON.parse(drilldownDataElement.textContent);
+				}
 
-				if (!option) {
+				if (!stackedBarsOptions) {
 					console.log("ECharts: the JSON could not be parsed. Make sure it starts and end with curly braces : { your json }");
 				}
 
-				console.log(option);
+				console.log(stackedBarsOptions);
 
 				$(this).show();
 
 				var myChart = echarts.init(this);
 
 				// Display the chart using the configuration items and data just specified.
-				myChart.setOption(option);
+				myChart.setOption(stackedBarsOptions);
 
 				myChart.on('click', (event) => {
 					if (event.name) {
+						if (undefined === event.data.groupId)
+							return;
+
 						var anneeToShow = event.name;
 						var barreToShow = event.data.groupId;
 
-						const subData = drilldownData.find((data) => data.dataGroupId === anneeToShow);
-						if (!subData)
-							return;
-
-						const treemapGroupedData = self.groupByType(subData.data);
-
-						// Calculate the sum of values for each parent node in the subData
-						const sumByParent = self.calculateSumByParent(subData.data);
-						const treemapData = self.createTreemapData(treemapGroupedData, barreToShow, sumByParent);
-
-						// Set the treemap series configuration
-						const treemapSeries = [
-							{
-								type: 'treemap',
-								breadcrumb: { show: true },
-								data: treemapData
-							}
-						];
+						console.log("Showing treemap for " + barreToShow + " " + anneeToShow);
 
 						var seriesToHide = [];
-						myChart.getOption().series.forEach(function(series) {
+						myChart.getOption().series.forEach(function (series) {
 							seriesToHide.push({
 								id: series.id,
 								data: []
 							});
 						});
 						myChart.setOption({
-							series:seriesToHide
+							series: seriesToHide
 						});
 
-						myChart.setOption({
+						var treeMapOptions = {
 							animationDurationUpdate: 500,
 							title: {
 								text: "Détail des " + barreToShow.toLowerCase(),
@@ -127,8 +120,12 @@ var ECharts_controller = (function () {
 							},
 							xAxis: { show: false },
 							yAxis: { show: false },
-							series: treemapSeries,
-							tooltip: { show: false },
+							series: [drilldownData[anneeToShow][barreToShow]],
+							tooltip: {
+								formatter: function (info) {
+									return info.name + ' : ' + formatUtil.addCommas(info.value) + ' €';
+								}
+							},
 							label: {
 								position: 'insideTopLeft',
 								lineHeight: 17
@@ -143,126 +140,17 @@ var ECharts_controller = (function () {
 										fontSize: 18
 									},
 									onclick: function () {
-										myChart.setOption(option, true);
+										myChart.setOption(stackedBarsOptions, true);
 									}
 								}
 							]
-						});
+						};
+
+						console.log(treeMapOptions);
+						myChart.setOption(treeMapOptions);
 					}
 				});
 			});
-		},
-
-		// Create a function to group the data by 'typeDeDonnee'
-		groupByType: function (data) {
-			const groupedData = {};
-			for (const item of data) {
-				const { typeDeDonnee } = item;
-				if (!(typeDeDonnee in groupedData)) {
-					groupedData[typeDeDonnee] = [];
-				}
-				groupedData[typeDeDonnee].push(item);
-			}
-			return groupedData;
-		},
-
-		// Function to calculate the sum of values for each parent node in the drilldownData
-		calculateSumByParent: function (data) {
-			const sumByParent = {};
-			for (const item of data) {
-				const { typeDeDonnee, value } = item;
-				if (!(typeDeDonnee in sumByParent)) {
-					sumByParent[typeDeDonnee] = 0;
-				}
-				sumByParent[typeDeDonnee] += value[0];
-			}
-			return sumByParent;
-		},
-
-		// Create a function to fill in the treemapData
-		createTreemapData: function (data, seriesName, sumByParent) {
-			if (seriesName === "Produits") {
-				const treemapData = [
-					{
-						name: 'Aides',
-						itemStyle: { color: '#A4CC69', borderWidth: 1 },
-						label: { show: true, position: 'inside' },
-						children: data['Aides'].map((item) => ({
-							name: `${item.name}\n${item.value[0]} €`,
-							value: item.value
-						}))
-					},
-					{
-						name: "Chiffre d'affaire",
-						itemStyle: { color: '#88A8CB', borderWidth: 1 },
-						label: { show: true, position: 'inside' },
-						children: data["Chiffre d'affaire"].map((item) => ({
-							name: `${item.name}\n${item.value[0]} €`,
-							value: item.value
-						}))
-					}
-				];
-				// Add the sum value to each parent node in treemapData
-				const treemapDataWithSum = treemapData.map((item) => {
-					const name = item.name.split('\n')[0]; // Extract the parent node name
-					if (sumByParent[name]) {
-						item.name = `${name}\n${sumByParent[name]} €`;
-					}
-					return item;
-				});
-
-				return treemapDataWithSum;
-			}
-			else {
-				const treemapData = [
-					{
-						name: 'Charges de structure',
-						itemStyle: { color: '#F5A893', borderWidth: 1 },
-						label: { show: true, position: 'inside' },
-						children: data['Charges de structure'].map((item) => ({
-							name: `${item.name}\n${item.value[0]} €`,
-							value: item.value
-						}))
-					},
-					{
-						name: 'EBE',
-						itemStyle: { color: '#F8B26D', borderWidth: 1 },
-						label: { show: true, position: 'inside' },
-						children: data['EBE'].map((item) => ({
-							name: `${item.name}\n${item.value[0]} €`,
-							value: item.value
-						}))
-					},
-					{
-						name: 'Charges opérationnelles',
-						itemStyle: { color: '#F28960', borderWidth: 1 },
-						label: { show: true, position: 'inside' },
-						children: data['Charges opérationnelles'].map((item) => ({
-							name: `${item.name}\n${item.value[0]} €`,
-							value: item.value
-						}))
-					},
-					{
-						name: 'Charges de personnels',
-						itemStyle: { color: '#FDCF74', borderWidth: 1 },
-						label: { show: true, position: 'inside' },
-						children: data['Charges de personnels'].map((item) => ({
-							name: `${item.name}\n${item.value[0]} €`,
-							value: item.value
-						}))
-					}
-				];
-				// Add the sum value to each parent node in treemapData
-				const treemapDataWithSum = treemapData.map((item) => {
-					const name = item.name.split('\n')[0]; // Extract the parent node name
-					if (sumByParent[name]) {
-						item.name = `${name}\n${sumByParent[name]} €`;
-					}
-					return item;
-				});
-
-				return treemapDataWithSum;
-			}
 		}
 
 
