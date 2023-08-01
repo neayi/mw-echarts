@@ -148,6 +148,16 @@ class EChartsHooks implements
 		$width = '100%';
 		$height = '400px';
 
+		$mainCategories = [
+			"Aides" => ['color' => '#A4CC69', 'stack' => "Produits"],
+			"Chiffre d'affaire" => ['color' => '#88A8CB', 'stack' => "Produits"],
+			"Prélèvements privés" => ['color' => '#FEFBFA', 'stack' => "Charges"],
+			"EBE" => ['color' => '#F8B26D', 'stack' => "Charges"],
+			"Charges de personnel" => ['color' => '#FDCF74', 'stack' => "Charges"],
+			"Charges de structure" => ['color' => '#F5A893', 'stack' => "Charges"],
+			"Charges opérationnelles" => ['color' => '#F28960', 'stack' => "Charges"]
+		];
+
 		// Define an array of valid parameters for "Produits" bar
 		$parametersProduits = [
 			"Aides" => "Aides",
@@ -295,8 +305,48 @@ class EChartsHooks implements
 			}
 
 			// Store the sum of produits and charges in the respective arrays
-			$produitsData[] = ['value' => $sumProduits, 'groupId' => $year];
-			$chargesData[] = ['value' => $sumCharges, 'groupId' => $year];
+			$produitsData[] = ['value' => $sumProduits];
+			$chargesData[] = ['value' => $sumCharges];
+		}
+
+		// Build the series:
+		// $mainCategories = [
+		// 	"Aides" => ['color' => '#A4CC69', 'stack' => "Produits"],
+		$stackBarSeries = [];
+		// Loop through each year's data in $parameters
+		foreach ($parameters as $year => $data) {
+
+			// Loop through each parameter's data for the current year
+			foreach ($data as $param => $value) {
+				$subCategory = $parametersCharges[$param] ?? $parametersProduits[$param];
+
+				if (!isset($parameters[$year][$subCategory]))
+					$parameters[$year][$subCategory] = 0;
+
+				$parameters[$year][$subCategory] += (float) $value;
+			}
+		}
+
+		foreach ($mainCategories as $name => $aCategory)
+		{
+			$series = [
+				"type" => "bar",
+				"name" => $name,
+				"stack" => $aCategory['stack'],
+				"id" => $name
+			];
+
+			$values = [];
+			foreach ($parameters as $year => $data) {
+				if (isset($data[$name]))
+					$values[] = ['value' =>  $data[$name], 'groupId' => $aCategory['stack']];
+				else
+					$values[] = ['value' => 0, 'groupId' => $aCategory['stack']];
+			}
+
+			$series['data'] = $values;
+
+			$stackBarSeries[] = $series;
 		}
 
 		$emptyTooltip = (object) [];
@@ -318,20 +368,7 @@ class EChartsHooks implements
 					"formatter" => "{value} €"
 				]
 			],
-			"series" => [
-				[
-					"type" => "bar",
-					"id" => "produits",
-					"name" => "Produits",
-					"data" => $produitsData,
-				],
-				[
-					"type" => "bar",
-					"id" => "charges",
-					"name" => "Charges",
-					"data" => $chargesData,
-				]
-			]
+			"series" => $stackBarSeries
 		];
 
 		// Convert the updated $option array to JSON format

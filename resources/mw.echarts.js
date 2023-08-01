@@ -83,8 +83,11 @@ var ECharts_controller = (function () {
 				myChart.setOption(option);
 
 				myChart.on('click', (event) => {
-					if (event.data && event.data.groupId) {
-						const subData = drilldownData.find((data) => data.dataGroupId === event.data.groupId);
+					if (event.name) {
+						var anneeToShow = event.name;
+						var barreToShow = event.data.groupId;
+
+						const subData = drilldownData.find((data) => data.dataGroupId === anneeToShow);
 						if (!subData)
 							return;
 
@@ -92,7 +95,7 @@ var ECharts_controller = (function () {
 
 						// Calculate the sum of values for each parent node in the subData
 						const sumByParent = self.calculateSumByParent(subData.data);
-						const treemapData = self.createTreemapData(treemapGroupedData, event.seriesName, sumByParent);
+						const treemapData = self.createTreemapData(treemapGroupedData, barreToShow, sumByParent);
 
 						// Set the treemap series configuration
 						const treemapSeries = [
@@ -103,29 +106,22 @@ var ECharts_controller = (function () {
 							}
 						];
 
-						if (myChart.getOption().series[0].type === 'bar') {
-							// Hide the bars of "groupId charges" chart
-							myChart.setOption({
-								series: [
-									{
-										id: 'produits',
-										dataGroupId: '',
-										data: []
-									},
-									{
-										id: 'charges',
-										dataGroupId: '',
-										data: []
-									}
-								]
+						var seriesToHide = [];
+						myChart.getOption().series.forEach(function(series) {
+							seriesToHide.push({
+								id: series.id,
+								data: []
 							});
-						}
+						});
+						myChart.setOption({
+							series:seriesToHide
+						});
 
 						myChart.setOption({
 							animationDurationUpdate: 500,
 							title: {
-								text: "Détail des " + event.seriesName.toLowerCase(),
-								subtext: "Année " + event.data.groupId,
+								text: "Détail des " + barreToShow.toLowerCase(),
+								subtext: "Année " + anneeToShow,
 								textAlign: 'center',
 								left: '50%'
 							},
