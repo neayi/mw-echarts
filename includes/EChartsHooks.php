@@ -40,11 +40,12 @@ class EChartsHooks implements
 	 * @param Parser $parser
 	 * @throws \MWException
 	 */
-	public function onParserFirstCallInit( $parser ) {
+	public function onParserFirstCallInit($parser)
+	{
 
 		// Add the following to a wiki page to see how it works:
 		// {{#echarts: {some json} }}
-		$parser->setFunctionHook( 'echarts', [ self::class, 'parserFunctionEcharts' ] );
+		$parser->setFunctionHook('echarts', [self::class, 'parserFunctionEcharts']);
 
 		// This parser function will show an economic chart on multiple years :
 		// {{#economic_charts:
@@ -68,7 +69,7 @@ class EChartsHooks implements
 		// 	| EBE 2017 = 28840
 		// 	| Prélèvements privés 2017 =
 		// 	}}
-		$parser->setFunctionHook( 'economic_charts', [ self::class, 'parserFunctionEconomicCharts' ] );
+		$parser->setFunctionHook('economic_charts', [self::class, 'parserFunctionEconomicCharts']);
 
 		return true;
 	}
@@ -81,10 +82,11 @@ class EChartsHooks implements
 	 * @param string ...$args
 	 * @return string HTML to insert in the page.
 	 */
-	public static function parserFunctionEcharts( Parser $parser, string $value, ...$args ) {
+	public static function parserFunctionEcharts(Parser $parser, string $value, ...$args)
+	{
 
-		$parser->getOutput()->addModules( 'ext.echarts' );
-		$parser->getOutput()->addModules( 'ext.mwecharts' );
+		$parser->getOutput()->addModules('ext.echarts');
+		$parser->getOutput()->addModules('ext.mwecharts');
 
 		array_unshift($args, $value);
 
@@ -95,8 +97,7 @@ class EChartsHooks implements
 		$json_parts = array();
 
 		// try to find a few specific parameters to the template call:
-		foreach ($args as $k => $v)
-		{
+		foreach ($args as $k => $v) {
 			$parts = explode('=', $v);
 
 			$key = strtolower(trim($parts[0]));
@@ -124,23 +125,23 @@ class EChartsHooks implements
 
 		$thisId = self::$id++;
 
-		$ret = '<div id="echart_'. $thisId . '_container"  class="'.$container_classes.'" style="width:'.$width.'; height:'.$height.'"><div id="echart_'. $thisId . '" class="echarts_div" style="width:'.$width.'; height:'.$height.'; display:none;">'.$json.'</div></div>';
+		$ret = '<div id="echart_' . $thisId . '_container"  class="' . $container_classes . '" style="width:' . $width . '; height:' . $height . '"><div id="echart_' . $thisId . '" class="echarts_div" style="width:' . $width . '; height:' . $height . '; display:none;">' . $json . '</div></div>';
 
 		return $ret;
 	}
 
 	/**
-	 * Parser function handler for {{#parserFunctionEconomicCharts: .. | .. }}
+	 * Parser function handler for {{#economic_charts: .. | .. }}
 	 *
 	 * @param Parser $parser
 	 * @param string $value
 	 * @param string ...$args
 	 * @return string HTML to insert in the page.
 	 */
-	public static function parserFunctionEconomicCharts( Parser $parser, string $value, ...$args ) {
-
-		$parser->getOutput()->addModules( 'ext.echarts' );
-		$parser->getOutput()->addModules( 'ext.mwecharts' );
+	public static function parserFunctionEconomicCharts(Parser $parser, string $value, ...$args)
+	{
+		$parser->getOutput()->addModules('ext.echarts');
+		$parser->getOutput()->addModules('ext.mwecharts');
 
 		array_unshift($args, $value);
 
@@ -148,47 +149,62 @@ class EChartsHooks implements
 		$height = '400px';
 
 		// Define an array of valid parameters for "Produits" bar
-		$validParametersProduits = [
-		    "Aides", 
-		    "Chiffre d'affaire", 
-		    "DPU, DPB", 
-		    "Vente autres produits", 
-		    "Vente de produits végétaux",
+		$parametersProduits = [
+			"Aides" => "Aides",
+			"Autres aides" => "Aides",
+			"Aide à la certification" => "Aides",
+			"DPU, DPB" => "Aides",
+
+			"Vente autres produits" => "Chiffre d'affaire",
+			"Vente de produits végétaux" => "Chiffre d'affaire",
+			"Vente de marchandises (achat-revente)" => "Chiffre d'affaire",
+			"Vente de marchandises" => "Chiffre d'affaire",
+			"Produits financiers" => "Chiffre d'affaire",
+			"Subvention" => "Chiffre d'affaire",
+			"Subventions" => "Chiffre d'affaire",
 		];
 
 		// Define an array of valid parameters for "Charges" bar
-		$validParametersCharges = [
-		    "Prélèvements privés", 
-		    "EBE", 
-		    "Salariés", 
-		    "Cotisations salariés", 
-		    "Cotisations exploitants", 
-		    "Carburant",
-			"Entretien matériel", 
-			"Eau, gaz, électricité", 
-			"Frais de gestion", 
-			"Certification", 
-			"Fermage", 
-			"Assurances", 
-			"Autres", 
-			"Fournitures diverses", 
-			"Travaux par tiers", 
-			"Bâches et voiles", 
-			"Produits de traitements", 
-			"Terreau", 
-			"Achat des légumes (revente)", 
-			"Fertilisation (MO)", 
-			"Semences et plants",
+		$parametersCharges = [
+			"Prélèvements privés" => "EBE",
+			"EBE" => "EBE",
+			"Salariés" => "Charges de personnels",
+			"Cotisations salariés" => "Charges de personnels",
+			"Cotisations exploitants" => "Charges de personnels",
+			"Carburant" => "Charges de structure",
+			"Entretien matériel" => "Charges de structure",
+			"Eau, gaz, électricité" => "Charges de structure",
+			"Frais de gestion" => "Charges de structure",
+			"Certification" => "Charges de structure",
+			"Fermage" => "Charges de structure",
+			"Assurances" => "Charges de structure",
+			"Autres" => "Charges de structure",
+			"Fournitures diverses" => "Charges opérationnelles",
+			"Travaux par tiers" => "Charges opérationnelles",
+			"Bâches et voiles" => "Charges opérationnelles",
+			"Produits de traitements" => "Charges opérationnelles",
+			"Terreau" => "Charges opérationnelles",
+			"Achat des légumes (revente)" => "Charges opérationnelles",
+			"Achat des légumes" => "Charges opérationnelles",
+			"Fertilisation (MO)" => "Charges opérationnelles",
+			"Fertilisation" => "Charges opérationnelles",
+			"Semences et plants" => "Charges opérationnelles",
 		];
 
+		// Build an array of valid paramters:
+		$validParameters = array();
+		foreach ($parametersProduits as $k => $v)
+			$validParameters[strtolower($k)] = $k;
+		foreach ($parametersCharges as $k => $v)
+			$validParameters[strtolower($k)] = $k;
+
 		// try to find a few specific parameters to the template call:
-		foreach ($args as $k => $v)
-		{
+		foreach ($args as $k => $v) {
 			$parts = explode('=', $v);
 			$key = trim($parts[0]);
 
 			$paramYearParts = explode(' ', $key);
-        	$param = $paramYearParts[0];
+			$param = $paramYearParts[0];
 
 			switch (strtolower($param)) {
 				case 'width':
@@ -205,18 +221,20 @@ class EChartsHooks implements
 
 				default:
 					$matches = array();
-					if (preg_match('/[0-9]{4}/', $key, $matches)) {
-						$year = $matches[0];
-						$param = trim(str_replace($year, '', $key));
-						// Check if the parameter belongs to "Produits" or "Charges" bar
-						if (in_array($param, $validParametersProduits)) {
-							$parameters[$year][$param] = str_replace(',', '.', $parts[1]);
-						} elseif (in_array($param, $validParametersCharges)) {
-							$parameters[$year][$param] = str_replace(',', '.', $parts[1]);
-						} else {
-							$ret = "Ce paramètre n'est pas reconnu : $key";
+					if (preg_match('@^(.*) +([0-9]{4})@', $key, $matches)) {
+						$param = strtolower(trim($matches[1]));
+						$year = $matches[2];
+
+						if (!isset($validParameters[$param]))
+						{
+							$ret = "<pre>Ce paramètre n'est pas reconnu : '''$key'''\n\n";
+							$ret .= "Les paramètres doivent faire partie de la liste suivante :\n";
+							$ret .= "* " . implode("\n* ", $validParameters) . "\n</pre>";
 							return $ret;
 						}
+
+						// Also replace commas with dots for the sake of json
+						$parameters[$year][$validParameters[$param]] = str_replace(',', '.', $parts[1]);
 					}
 					break;
 			}
@@ -224,75 +242,30 @@ class EChartsHooks implements
 
 		$thisId = self::$id++;
 
-		// Extract the years from the $parameters array
-		$years = array_keys($parameters);
-
-		// Convert each year to a string
-		$years = array_map('strval', $years);
-
 		// initialize the drilldownData array
 		$drilldownData = [];
 
 		// Loop through each year's data in $parameters
 		foreach ($parameters as $year => $data) {
-		    // Initialize the data array for the current year
-		    $yearData = [
-		        'dataGroupId' => (string) $year,
-		        'data' => [],
-		    ];
-		
-		    // Loop through each parameter's data for the current year
-		    foreach ($data as $param => $value) {
-		        // Determine the 'typeDeDonnee' based on the parameter name
-		        switch ($param) {
-		            case 'DPU, DPB':
-						case 'Aides':
-		                	$typeDeDonnee = 'Aides';
-		                	break;
-		            case 'Vente autres produits':
-		            case 'Vente de produits végétaux':
-		                $typeDeDonnee = 'Détail Chiffre d\'affaire';
-		                break;
-		            case "Chiffre d'affaire":
-		                $typeDeDonnee = "Chiffre d'affaire";
-		                break;
-		            case 'Prélèvements privés':
-		            case 'EBE':
-		                $typeDeDonnee = 'EBE';
-		                break;
-		            case 'Salariés':
-		            case 'Cotisations salariés':
-		            case 'Cotisations exploitants':
-		                $typeDeDonnee = 'Charges de personnels';
-		                break;
-		            case 'Carburant':
-		            case 'Entretien matériel':
-		            case 'Eau, gaz, électricité':
-		            case 'Frais de gestion':
-		            case 'Certification':
-		            case 'Fermage':
-		            case 'Assurances':
-		            case 'Autres':
-		                $typeDeDonnee = 'Charges de structure';
-		                break;
-		            default:
-		                $typeDeDonnee = 'Charges opérationnelles';
-		                break;
-		        }
-			
-		        // Create a new data entry for the parameter
-		        $paramData = [
-		            'name' => $param,
-		            'typeDeDonnee' => $typeDeDonnee,
-		            'value' => [(float) $value], // Assuming the value is a single value, you can adjust this accordingly
-		        ];
-			
-		        // Add the parameter data to the year's data array
-		        $yearData['data'][] = $paramData;
-		    }
-		
-		    // Add the year's data to the $drilldownData array
-		    $drilldownData[] = $yearData;
+			// Initialize the data array for the current year
+			$yearData = [
+				'dataGroupId' => (string) $year
+			];
+
+			// Loop through each parameter's data for the current year
+			foreach ($data as $param => $value) {
+				$paramData = [
+					'name' => $param,
+					'typeDeDonnee' => $parametersCharges[$param] ?? $parametersProduits[$param],
+					'value' => [(float) $value], // Assuming the value is a single value, you can adjust this accordingly
+				];
+
+				// Add the parameter data to the year's data array
+				$yearData['data'][] = $paramData;
+			}
+
+			// Add the year's data to the $drilldownData array
+			$drilldownData[] = $yearData;
 		}
 
 		// Initialize arrays to store data for each bar
@@ -301,64 +274,64 @@ class EChartsHooks implements
 
 		// Loop through $drilldownData to separate data for each bar
 		foreach ($drilldownData as $dataGroup) {
-		    $year = $dataGroup['dataGroupId'];
-		
-		    // Initialize variables to store the sum of products and charges for each year
-		    $sumProduits = 0;
-		    $sumCharges = 0;
-		
-		    foreach ($dataGroup['data'] as $data) {
-		        $name = $data['name'];
-		        $value = $data['value'][0];
-			
-		        // Check if the parameter belongs to "Produits" or "Charges" bar
-		        if (in_array($name, $validParametersProduits)) {
-		            // Accumulate the value for produits
-		            $sumProduits += (float) $value;
-		        } else {
-		            // Accumulate the value for charges
-		            $sumCharges += (float) $value;
-		        }
-		    }
-		
-		    // Store the sum of produits and charges in the respective arrays
-		    $produitsData[] = ['value' => $sumProduits, 'groupId' => $year ];
-		    $chargesData[] = ['value' => $sumCharges, 'groupId' => $year];
+			$year = $dataGroup['dataGroupId'];
+
+			// Initialize variables to store the sum of products and charges for each year
+			$sumProduits = 0;
+			$sumCharges = 0;
+
+			foreach ($dataGroup['data'] as $data) {
+				$name = $data['name'];
+				$value = $data['value'][0];
+
+				// Check if the parameter belongs to "Produits" or "Charges" bar
+				if (isset($parametersProduits[$name])) {
+					// Accumulate the value for produits
+					$sumProduits += (float) $value;
+				} else {
+					// Accumulate the value for charges
+					$sumCharges += (float) $value;
+				}
+			}
+
+			// Store the sum of produits and charges in the respective arrays
+			$produitsData[] = ['value' => $sumProduits, 'groupId' => $year];
+			$chargesData[] = ['value' => $sumCharges, 'groupId' => $year];
 		}
 
 		$emptyTooltip = (object) [];
 		$option = [
-		    "tooltip" => $emptyTooltip,
-		    "title" => [
-		        "text" => "Evolution du bilan financier",
-		        "subtext" => "Cliquer sur une barre pour voir le détail",
-		        "textAlign" => "center",
-		        "left" => "50%"
-		    ],
-		    "xAxis" => [
-		        "type" => "category",
-		        "data" => $years,
-		    ],
-		    "yAxis" => [
-		        "type" => "value",
-		        "axisLabel" => [
-		            "formatter" => "{value} €"
-		        ]
-		    ],
-		    "series" => [
-		        [
-		            "type" => "bar",
-		            "id" => "produits",
-		            "name" => "Produits",
-		            "data" => $produitsData,
-		        ],
-		        [
-		            "type" => "bar",
-		            "id" => "charges",
-		            "name" => "Charges",
-		            "data" => $chargesData,
-		        ]
-		    ]
+			"tooltip" => $emptyTooltip,
+			"title" => [
+				"text" => "Évolution du bilan financier",
+				"subtext" => "Cliquer sur une barre pour voir le détail",
+				"textAlign" => "center",
+				"left" => "50%"
+			],
+			"xAxis" => [
+				"type" => "category",
+				"data" => array_map('strval', array_keys($parameters)),
+			],
+			"yAxis" => [
+				"type" => "value",
+				"axisLabel" => [
+					"formatter" => "{value} €"
+				]
+			],
+			"series" => [
+				[
+					"type" => "bar",
+					"id" => "produits",
+					"name" => "Produits",
+					"data" => $produitsData,
+				],
+				[
+					"type" => "bar",
+					"id" => "charges",
+					"name" => "Charges",
+					"data" => $chargesData,
+				]
+			]
 		];
 
 		// Convert the updated $option array to JSON format
@@ -367,14 +340,11 @@ class EChartsHooks implements
 
 		$parameters = json_encode($parameters, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
-		$ret = '<div id="echart_'. $thisId . '_container"  style="width:'.$width.'; height:'.$height.'"><div id="echart_'. $thisId . '" class="echarts_economical_div" style="width:'.$width.'; height:'.$height.'; display:none;">'.$JS.'</div></div>';
-
+		$ret = '<div id="echart_' . $thisId . '_container"  style="width:' . $width . '; height:' . $height . '"><div id="echart_' . $thisId . '" class="echarts_economical_div" style="width:' . $width . '; height:' . $height . '; display:none;">' . $JS . '</div></div>';
 		$ret .= '<div id="drilldownData_' . $thisId . '" style="display:none;">' . htmlentities($drilldownDataJSON) . '</div>';
-
 		$ret .= 'Parameters : <pre>' . print_r($parameters, true) . '</pre>';
-
 		$ret .= 'drilldownData : <pre>' . print_r($drilldownDataJSON, true) . '</pre>';
 
-		return [ $ret, 'noparse' => true, 'isHTML' => true ];
+		return [$ret, 'noparse' => true, 'isHTML' => true];
 	}
 }

@@ -42,6 +42,8 @@ var ECharts_controller = (function () {
 					console.log("ECharts: the JSON could not be parsed. Make sure it starts and end with curly braces : { your json }");
 				}
 
+				console.log(option);
+
 				$(this).show();
 
 				var myChart = echarts.init(this);
@@ -70,6 +72,8 @@ var ECharts_controller = (function () {
 				if (!option) {
 					console.log("ECharts: the JSON could not be parsed. Make sure it starts and end with curly braces : { your json }");
 				}
+
+				console.log(option);
 
 				$(this).show();
 
