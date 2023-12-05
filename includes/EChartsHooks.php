@@ -164,8 +164,8 @@ class EChartsHooks implements
 			"Autres aides" => "Aides",
 			"Aide à la certification" => "Aides",
 			"DPU, DPB" => "Aides",
-			"Subvention" => "Chiffre d'affaire",
-			"Subventions" => "Chiffre d'affaire",
+			"Subvention" => "Aides",
+			"Subventions" => "Aides",
 
 			"Chiffre d'affaire" => "Chiffre d'affaire",
 			"Vente autres produits" => "Chiffre d'affaire",
