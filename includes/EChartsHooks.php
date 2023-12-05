@@ -84,7 +84,6 @@ class EChartsHooks implements
 	 */
 	public static function parserFunctionEcharts(Parser $parser, string $value, ...$args)
 	{
-
 		$parser->getOutput()->addModules('ext.echarts');
 		$parser->getOutput()->addModules('ext.mwecharts');
 
@@ -165,6 +164,8 @@ class EChartsHooks implements
 			"Autres aides" => "Aides",
 			"Aide à la certification" => "Aides",
 			"DPU, DPB" => "Aides",
+			"Subvention" => "Chiffre d'affaire",
+			"Subventions" => "Chiffre d'affaire",
 
 			"Chiffre d'affaire" => "Chiffre d'affaire",
 			"Vente autres produits" => "Chiffre d'affaire",
@@ -172,8 +173,6 @@ class EChartsHooks implements
 			"Vente de marchandises (achat-revente)" => "Chiffre d'affaire",
 			"Vente de marchandises" => "Chiffre d'affaire",
 			"Produits financiers" => "Chiffre d'affaire",
-			"Subvention" => "Chiffre d'affaire",
-			"Subventions" => "Chiffre d'affaire",
 		];
 
 		// Define an array of valid parameters for "Charges" bar
