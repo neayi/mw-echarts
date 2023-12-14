@@ -84,8 +84,7 @@ class EChartsHooks implements
 	 */
 	public static function parserFunctionEcharts(Parser $parser, string $value, ...$args)
 	{
-		$parser->getOutput()->addModules('ext.echarts');
-		$parser->getOutput()->addModules('ext.mwecharts');
+		$parser->getOutput()->addModules(['ext.echarts', 'ext.mwecharts']);
 
 		array_unshift($args, $value);
 
@@ -139,8 +138,7 @@ class EChartsHooks implements
 	 */
 	public static function parserFunctionEconomicCharts(Parser $parser, string $value, ...$args)
 	{
-		$parser->getOutput()->addModules('ext.echarts');
-		$parser->getOutput()->addModules('ext.mwecharts');
+		$parser->getOutput()->addModules(['ext.echarts', 'ext.mwecharts']);
 
 		array_unshift($args, $value);
 

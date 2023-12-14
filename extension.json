@@ -34,10 +34,7 @@
 		},
 		"ext.echarts": {
 			"localBasePath": "modules/ext.echarts",
-			"remoteExtPath": "ECharts/echarts/ext.echarts",
-			"styles": [
-
-			],
+			"remoteExtPath": "ECharts/modules/ext.echarts",
 			"packageFiles": [
 				"echarts.min.js"
 			]
