@@ -23,7 +23,8 @@
 				"mw.echarts.js"
 			],
 			"dependencies": [
-				"jquery.ui"
+				"jquery.ui",
+				"ext.echarts"
 			],
 			"targets": [
 				"desktop",
@@ -35,7 +36,7 @@
 		"ext.echarts": {
 			"localBasePath": "modules/ext.echarts",
 			"remoteExtPath": "ECharts/modules/ext.echarts",
-			"packageFiles": [
+			"scripts": [
 				"echarts.min.js"
 			]
 		}
