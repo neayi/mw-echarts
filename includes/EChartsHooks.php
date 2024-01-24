@@ -146,6 +146,8 @@ class EChartsHooks implements
 		$height = '700px';
 
 		$definitions = json_decode(file_get_contents(__DIR__ . '/../definitions/compta_defs_fr.html'), true);
+
+		// reorder the graph
 		$temp = $definitions['Charges'];
 		unset($definitions['Charges']);
 		$definitions['Charges'] = $temp;
@@ -153,8 +155,10 @@ class EChartsHooks implements
 		unset($definitions['Soldes de gestion']);
 		$definitions['Soldes de gestion'] = $temp;
 
+		// keep a list of the postes in solde de gestion for later
 		$postesSoldeDeGestion = $definitions['Soldes de gestion']['Soldes de gestion']['postes'];
 
+		// merge postes and synonyms (autres postes) so that the graph can manage some other equivalent poste names
 		foreach ($definitions as $barstacks => $barStackElements)
 		{
 			foreach ($barStackElements as $name => $aCategory)
@@ -179,10 +183,8 @@ class EChartsHooks implements
 					$validParameters[strtolower($aPoste)] = $aPoste;
 			}
 		}
-
-		$validParameters['ebe'] = 'EBE';
-		 
-		// try to find a few specific parameters to the template call:
+	 
+		// try to find a few specific parameters to the template call, and then check the validity of the other parameters:
 		foreach ($args as $k => $v) {
 			$parts = explode('=', $v);
 			$key = trim($parts[0]);
@@ -255,7 +257,7 @@ class EChartsHooks implements
 				}
 				else
 				{
-					$ret = "<pre>Attention, vos données pour $year ne sont pas équilibrées entre les produits et les charges.<br>NB : Si vous avez spécifié les prélévements privés, il faut les déduire de l'EBE !</pre>";
+					$ret = "<pre>Attention, vos données pour $year ne sont pas équilibrées entre les produits et les charges.</pre>";
 					return $ret;
 				}
 			}
