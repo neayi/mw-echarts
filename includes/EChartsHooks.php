@@ -226,6 +226,16 @@ class EChartsHooks implements
 			}
 		}
 
+		if (empty($parameters))
+		{
+			$ret = "<pre>Aucun paramètre n'a été reconnu dans la liste.\n\n";
+			$ret .= "Les paramètres doivent faire partie de la liste suivante ";
+			$ret .= "(chaque paramètre doit être suivi de l'année associée, ";
+			$ret .= "par exemple '''Semences et plants 2018 = 4000'''):\n";
+			$ret .= "* " . implode("\n* ", $validParameters) . "\n</pre>";
+			return $ret;
+		}
+
 		ksort($parameters);
 
 		$thisId = self::$id++;
@@ -236,6 +246,9 @@ class EChartsHooks implements
 		// Add a last check on the consistency of the data:
 		foreach ($drilldownData as $year => $data)
 		{
+			if ($data['Charges']['value'] == 0)
+				continue;
+
 			$ratio = $data['Produits']['value'] / $data['Charges']['value'];
 			if ($ratio < 0.9 || $ratio > 1.1)
 			{
