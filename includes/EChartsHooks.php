@@ -145,67 +145,43 @@ class EChartsHooks implements
 		$width = '100%';
 		$height = '700px';
 
-		$mainCategories = [
-			"Chiffre d'affaire" => ['color' => '#afd095', 'stack' => "Produits"],
-			"Aides" => ['color' => '#729fcf', 'stack' => "Produits"],
+		$definitions = json_decode(file_get_contents(__DIR__ . '/../definitions/compta_defs_fr.html'), true);
+		$temp = $definitions['Charges'];
+		unset($definitions['Charges']);
+		$definitions['Charges'] = $temp;
+		$temp = $definitions['Soldes de gestion'];
+		unset($definitions['Soldes de gestion']);
+		$definitions['Soldes de gestion'] = $temp;
 
-			"Charges opérationnelles" => ['color' => '#F28960', 'stack' => "Charges"],
-			"Charges de structure" => ['color' => '#F5A893', 'stack' => "Charges"],
-			"Charges de personnel" => ['color' => '#FDCF74', 'stack' => "Charges"],
-			"EBE" => ['color' => '#F8B26D', 'stack' => "Charges"],
-//			"Prélèvements privés" => ['color' => '#DB8129', 'stack' => "Charges"],
-		];
+		$postesSoldeDeGestion = $definitions['Soldes de gestion']['Soldes de gestion']['postes'];
 
-		// Define an array of valid parameters for "Produits" bar
-		$parametersDefinition['Produits'] = [
-			"Aides" => "Aides",
-			"Autres aides" => "Aides",
-			"Aide à la certification" => "Aides",
-			"DPU, DPB" => "Aides",
-			"Subvention" => "Aides",
-			"Subventions" => "Aides",
+		foreach ($definitions as $barstacks => $barStackElements)
+		{
+			foreach ($barStackElements as $name => $aCategory)
+			{
+				if (empty($aCategory['autres postes']))
+					continue;
 
-			"Chiffre d'affaire" => "Chiffre d'affaire",
-			"Vente autres produits" => "Chiffre d'affaire",
-			"Vente de produits végétaux" => "Chiffre d'affaire",
-			"Vente de marchandises (achat-revente)" => "Chiffre d'affaire",
-			"Vente de marchandises" => "Chiffre d'affaire",
-			"Produits financiers" => "Chiffre d'affaire",
-		];
-
-		// Define an array of valid parameters for "Charges" bar
-		$parametersDefinition['Charges'] = [
-			"Prélèvements privés" => "EBE",
-			"EBE" => "EBE",
-			"Salariés" => "Charges de personnel",
-			"Cotisations salariés" => "Charges de personnel",
-			"Cotisations exploitants" => "Charges de personnel",
-			"Carburant" => "Charges de structure",
-			"Entretien matériel" => "Charges de structure",
-			"Eau, gaz, électricité" => "Charges de structure",
-			"Frais de gestion" => "Charges de structure",
-			"Certification" => "Charges de structure",
-			"Fermage" => "Charges de structure",
-			"Assurances" => "Charges de structure",
-			"Autres" => "Charges de structure",
-			"Fournitures diverses" => "Charges opérationnelles",
-			"Travaux par tiers" => "Charges opérationnelles",
-			"Bâches et voiles" => "Charges opérationnelles",
-			"Produits de traitements" => "Charges opérationnelles",
-			"Terreau" => "Charges opérationnelles",
-			"Achat des légumes (revente)" => "Charges opérationnelles",
-			"Achat des légumes" => "Charges opérationnelles",
-			"Fertilisation (MO)" => "Charges opérationnelles",
-			"Fertilisation" => "Charges opérationnelles",
-			"Semences et plants" => "Charges opérationnelles",
-		];
+				$definitions[$barstacks][$name]['postes'] = array_merge($definitions[$barstacks][$name]['postes'], $definitions[$barstacks][$name]['autres postes']);
+			}
+		}
 
 		// Build an array of valid paramters:
 		$validParameters = array();
-		foreach ($parametersDefinition as $parametersList)
-			foreach ($parametersList as $k => $v)
-				$validParameters[strtolower($k)] = $k;
+		foreach ($definitions as $barstacks => $barStackElements)
+		{
+			if ($barstacks == "Soldes de gestion")
+				$barstacks = 'Charges';
 
+			foreach ($barStackElements as $name => $aCategory)
+			{
+				foreach ($aCategory['postes'] as $aPoste)
+					$validParameters[strtolower($aPoste)] = $aPoste;
+			}
+		}
+
+		$validParameters['ebe'] = 'EBE';
+		 
 		// try to find a few specific parameters to the template call:
 		foreach ($args as $k => $v) {
 			$parts = explode('=', $v);
@@ -252,6 +228,51 @@ class EChartsHooks implements
 
 		$thisId = self::$id++;
 
+		$options = self::buildStackBarOptions($parameters, $definitions);
+		$drilldownData = self::buildDrillDownData($parameters, $definitions);
+
+		// Add a last check on the consistency of the data:
+		foreach ($drilldownData as $year => $data)
+		{
+			$ratio = $data['Produits']['value'] / $data['Charges']['value'];
+			if ($ratio < 0.9 || $ratio > 1.1)
+			{
+				// Check that the inconsistency doesn't come from the other parts of the Soldes de gestion:
+				$soldeGestion = 0;
+				foreach ($postesSoldeDeGestion as $aPoste)
+					$soldeGestion += $parameters[$year][$aPoste] ?? 0;
+
+				if ($data['Charges']['value'] - $data['Produits']['value'] == $soldeGestion)
+				{
+					// Let's fix the graph then
+					if (isset($parameters[$year]['EBE']))
+						$parameters[$year]['EBE'] -= $soldeGestion;
+					else if (isset($parameters[$year]['EBE total']))
+						$parameters[$year]['EBE total'] -= $soldeGestion;
+
+					$options = self::buildStackBarOptions($parameters, $definitions);
+					$drilldownData = self::buildDrillDownData($parameters, $definitions);				
+				}
+				else
+				{
+					$ret = "<pre>Attention, vos données pour $year ne sont pas équilibrées entre les produits et les charges.<br>NB : Si vous avez spécifié les prélévements privés, il faut les déduire de l'EBE !</pre>";
+					return $ret;
+				}
+			}
+		}
+
+		// Convert the updated $option array to JSON format
+		$JS = json_encode($options, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+		$drilldownDataJSON = json_encode($drilldownData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+		$ret = '<div id="echart_' . $thisId . '_container"  style="width:' . $width . '; height:' . $height . '"><div id="echart_' . $thisId . '" class="echarts_economical_div" style="width:' . $width . '; height:' . $height . '; display:none;">' . $JS . '</div></div>';
+		$ret .= '<div id="drilldownData_' . $thisId . '" style="display:none;">' . htmlentities($drilldownDataJSON) . '</div>';
+
+		return [$ret, 'noparse' => true, 'isHTML' => true];
+	}
+	
+	private static function buildStackBarOptions($parameters, $definitions)
+	{
 		// Build the series:
 		$stackBarSeries = [];
 
@@ -261,7 +282,7 @@ class EChartsHooks implements
 
 			// Loop through each parameter's data for the current year
 			foreach ($data as $param => $value) {
-				$subCategory = $parametersDefinition['Charges'][$param] ?? $parametersDefinition['Produits'][$param];
+				$subCategory = self::findCategorieForPoste($definitions, $param);
 
 				if (!isset($subSums[$year][$subCategory]))
 					$subSums[$year][$subCategory] = 0;
@@ -270,41 +291,47 @@ class EChartsHooks implements
 			}
 		}
 
-		foreach ($mainCategories as $name => $aCategory)
+		foreach ($definitions as $barstacks => $barStackElements)
 		{
-			$series = [
-				"type" => "bar",
-				'itemStyle' => [
-					'color' => $aCategory['color']
-				],
-				'label' => [
-					'show' => true,
-					'position' => 'inside',
-					'formatter' => '{c} €'
-				],
-      			'emphasis'=> [
-					'focus'=> 'series'
+			if ($barstacks == "Soldes de gestion")
+				$barstacks = 'Charges';
+
+			foreach ($barStackElements as $name => $aCategory)
+			{
+				$series = [
+					"type" => "bar",
+					'itemStyle' => [
+						'color' => $aCategory['color']
 					],
-				"name" => $name,
-				"stack" => $aCategory['stack'],
-				"id" => $name
-			];
-
-			$values = [];
-			foreach ($parameters as $year => $v) {
-				if (isset($subSums[$year][$name]))
-					$values[] = ['groupId' => $aCategory['stack'], 'value' => $subSums[$year][$name]];
-				else
-					$values[] = ['groupId' => $aCategory['stack'], 'value' => 0];
+					'label' => [
+						'show' => true,
+						'position' => 'inside',
+						'formatter' => '{c} €'
+					],
+					  'emphasis'=> [
+						'focus'=> 'series'
+						],
+					"name" => $name,
+					"stack" => $barstacks,
+					"id" => $name
+				];
+	
+				$values = [];
+				foreach ($parameters as $year => $v) {
+					if (isset($subSums[$year][$name]))
+						$values[] = ['groupId' => $barstacks, 'value' => $subSums[$year][$name]];
+					else
+						$values[] = ['groupId' => $barstacks, 'value' => 0];
+				}
+	
+				$series['data'] = $values;
+	
+				$stackBarSeries[] = $series;
 			}
-
-			$series['data'] = $values;
-
-			$stackBarSeries[] = $series;
 		}
 
 		$emptyTooltip = (object) [];
-		$option = [
+		$options = [
 			"tooltip" => $emptyTooltip,
 			"title" => [
 				"text" => "Évolution du bilan financier",
@@ -326,6 +353,11 @@ class EChartsHooks implements
 			"series" => $stackBarSeries
 		];
 
+		return $options;
+	}
+
+	private static function buildDrillDownData($parameters, $definitions)
+	{
 		// Now build the drilldown data (for the treemap)
 		$drilldownData = [];
 
@@ -335,64 +367,43 @@ class EChartsHooks implements
 			$drilldownData[$year]['Produits'] = self::getTreeMapSeries("Produits $year");
 			$drilldownData[$year]['Charges'] = self::getTreeMapSeries("Charges $year");
 
-			foreach ($mainCategories as $name => $aCategory) {
+			foreach ($definitions as $barstacks => $barStackElements)
+			{
+				if ($barstacks == "Soldes de gestion")
+					$barstacks = 'Charges';
 
-				foreach ($parametersDefinition as $l1Category => $paramsDefs)
+				foreach ($barStackElements as $mainCategory => $aCategory)
 				{
-					if ($aCategory['stack'] == $l1Category)
+					$treeMapSubCategory = null;
+
+					foreach ($aCategory['postes'] as $paramName)
 					{
-						$treeMapSubCategory = null;
-
-						foreach ($paramsDefs as $paramName => $mainCategory) {
-							if ($mainCategory != $name)
-								continue;
-
-							if (!empty($parameters[$year][$paramName]))
-							{
-								if (!$treeMapSubCategory)
-									$treeMapSubCategory = self::getTreeMapItem($name, 0, $aCategory['color'], 1); // For Aides
-
-								$treeMapSubCategory['children'][] = self::getTreeMapItem($paramName, $parameters[$year][$paramName]);
-								$treeMapSubCategory['value'] += $parameters[$year][$paramName];
-							}
-
-						}
-
-						if ($treeMapSubCategory)
+						if (!empty($data[$paramName]))
 						{
-							self::addValueToName($treeMapSubCategory);
+							if (!$treeMapSubCategory)
+								$treeMapSubCategory = self::getTreeMapItem($mainCategory, 0, $aCategory['color'], 1); // For Aides
 
-							$drilldownData[$year][$l1Category]['data'][] = $treeMapSubCategory;
-							$drilldownData[$year][$l1Category]['value'] += $treeMapSubCategory['value'];
+							$treeMapSubCategory['children'][] = self::getTreeMapItem($paramName, $data[$paramName]);
+							$treeMapSubCategory['value'] += $data[$paramName];
 						}
 					}
+
+					if ($treeMapSubCategory)
+					{
+						self::addValueToName($treeMapSubCategory);
+
+						$drilldownData[$year][$barstacks]['data'][] = $treeMapSubCategory;
+						$drilldownData[$year][$barstacks]['value'] += $treeMapSubCategory['value'];
+					}
 				}
+
 			}
 
 			self::addValueToName($drilldownData[$year]['Produits']);
 			self::addValueToName($drilldownData[$year]['Charges']);
 		}
 
-		// Add a last check on the consistency of the data:
-		foreach ($drilldownData as $year => $data)
-		{
-			$ratio = $data['Produits']['value'] / $data['Charges']['value'];
-			if ($ratio < 0.9 || $ratio > 1.1)
-			{
-				$ret = "<pre>Attention, vos données pour $year ne sont pas équilibrées entre les produits et les charges.<br>NB : Si vous avez spécifié les prélévements privés, il faut les déduire de l'EBE !</pre>";
-				return $ret;
-			}
-		}
-
-
-		// Convert the updated $option array to JSON format
-		$JS = json_encode($option, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-		$drilldownDataJSON = json_encode($drilldownData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-
-		$ret = '<div id="echart_' . $thisId . '_container"  style="width:' . $width . '; height:' . $height . '"><div id="echart_' . $thisId . '" class="echarts_economical_div" style="width:' . $width . '; height:' . $height . '; display:none;">' . $JS . '</div></div>';
-		$ret .= '<div id="drilldownData_' . $thisId . '" style="display:none;">' . htmlentities($drilldownDataJSON) . '</div>';
-
-		return [$ret, 'noparse' => true, 'isHTML' => true];
+		return $drilldownData;
 	}
 
 	private static function getTreeMapSeries($name)
@@ -435,5 +446,20 @@ class EChartsHooks implements
 	private static function addValueToName(&$item)
 	{
 		$item['name'] .= "\n" . $item['value'] . ' €';
+	}
+
+	private static function findCategorieForPoste($definitions, $posteToLookup)
+	{
+		foreach ($definitions as $barStackElements)
+		{
+			foreach ($barStackElements as $name => $aCategory)
+			{
+				foreach ($aCategory['postes'] as $aPoste)
+					if ($posteToLookup == $aPoste)
+						return $name;
+			}
+		}
+
+		return false;
 	}
 }
