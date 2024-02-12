@@ -113,6 +113,9 @@ class EChartsHooks implements
 					$container_classes .= "float-md-" . trim($parts[1]) . ' ';
 					break;
 
+				case 'title':
+					break;
+
 				default:
 					$json_parts[] = $v;
 					break;
@@ -205,6 +208,9 @@ class EChartsHooks implements
 						$height .= 'px';
 					break;
 
+				case 'title':
+					break;
+					
 				default:
 					$matches = array();
 					if (preg_match('@^(.*) +([0-9]{4})@', $key, $matches)) {
