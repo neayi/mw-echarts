@@ -116,6 +116,10 @@ class EChartsHooks implements
 				case 'title':
 					break;
 
+				case 'json':
+					$jsonTitle = trim($parts[1]);
+					break;
+	
 				default:
 					$json_parts[] = $v;
 					break;
@@ -126,7 +130,7 @@ class EChartsHooks implements
 
 		$thisId = self::$id++;
 
-		$ret = '<div id="echart_' . $thisId . '_container"  class="' . $container_classes . '" style="width:' . $width . '; height:' . $height . '"><div id="echart_' . $thisId . '" class="echarts_div" style="width:' . $width . '; height:' . $height . '; display:none;">' . $json . '</div></div>';
+		$ret = '<div id="echart_' . $thisId . '_container"  class="' . $container_classes . '" style="width:' . $width . '; height:' . $height . '"><div id="echart_' . $thisId . '" data-jsontitle="'.$jsonTitle.'" class="echarts_div" style="width:' . $width . '; height:' . $height . '; display:none;">' . $json . '</div></div>';
 
 		return $ret;
 	}

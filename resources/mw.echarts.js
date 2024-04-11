@@ -25,33 +25,33 @@ var ECharts_controller = (function () {
 
 	return {
 
-
 		initialize: function () {
 
 			var self = this;
 
 			$('.echarts_div').each(function (element) {
-
 				var option = "";
+				let div = this;
 
-				eval("option = " + this.textContent);
-
-				this.textContent = '';
-
-				if (!option) {
-					console.log("ECharts: the JSON could not be parsed. Make sure it starts and end with curly braces : { your json }");
+				if (this.dataset.jsontitle)
+				{
+					$.ajax({
+						type: "GET",
+						url: '/wiki/' + encodeURIComponent(this.dataset.jsontitle),
+						data: {"action": "raw"},
+						dataType: 'json',
+						success: function( jsondata ){
+							self.buildChart(div, jsondata);							
+						}
+					});					
 				}
-
-				console.log(option);
-
-				$(this).show();
-
-				var myChart = echarts.init(this);
-
-				// Display the chart using the configuration items and data just specified.
-				myChart.setOption(option);
+				else 
+				{
+					eval("option = " + this.textContent);
+					this.textContent = '';		
+					self.buildChart(div, option);			
+				}
 			});
-
 
 			$('.echarts_economical_div').each(function (element) {
 
@@ -151,6 +151,21 @@ var ECharts_controller = (function () {
 					}
 				});
 			});
+		},
+
+		buildChart: function(div, option) {
+			if (!option) {
+				console.log("ECharts: the JSON could not be parsed. Make sure it starts and end with curly braces : { your json }");
+			}
+
+			console.log(option);
+
+			$(div).show();
+
+			var myChart = echarts.init(div);
+
+			// Display the chart using the configuration items and data just specified.
+			myChart.setOption(option);
 		}
 
 
