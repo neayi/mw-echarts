@@ -35,13 +35,14 @@ var ECharts_controller = (function () {
 
 				if (this.dataset.jsontitle)
 				{
+					let title = this.dataset.jsontitle;
 					$.ajax({
 						type: "GET",
-						url: '/wiki/' + encodeURIComponent(this.dataset.jsontitle),
+						url: '/wiki/' + encodeURIComponent(title),
 						data: {"action": "raw"},
 						dataType: 'json',
 						success: function( jsondata ){
-							self.buildChart(div, jsondata);							
+							self.buildChart(div, jsondata, title);							
 						}
 					});					
 				}
@@ -49,7 +50,7 @@ var ECharts_controller = (function () {
 				{
 					eval("option = " + this.textContent);
 					this.textContent = '';		
-					self.buildChart(div, option);			
+					self.buildChart(div, option, "embedded");			
 				}
 			});
 
@@ -153,11 +154,35 @@ var ECharts_controller = (function () {
 			});
 		},
 
-		buildChart: function(div, option) {
+		buildChart: function(div, option, pageTitle) {
 			if (!option) {
 				console.log("ECharts: the JSON could not be parsed. Make sure it starts and end with curly braces : { your json }");
 			}
 
+			// Override some of the formatters with functions for enhanced functionality
+			switch (option?.tooltip?.formatter) {
+				case 'rotation':
+					// Show in the tooltip the description that accompanies this item
+					option.tooltip.formatter = (item) => {
+						return item.marker + "<b>" + item.name + "</b><br>" + item.data.description;
+					};
+					break;
+
+				case 'assolement':
+					// Show in the tooltip: Colza : 32ha (19%)
+					option.tooltip.formatter = (info) => {
+						let value = info.value;
+						let name = info.name;
+						let percent = '(' + Math.round((100 * value) / info.treeAncestors[0].value) + '%)';
+						return name + ' : ' + value + 'ha ' + percent;
+					};
+					break;
+				
+				default:
+					break;
+			}
+
+			console.log("Chart stored in page " + pageTitle);
 			console.log(option);
 
 			$(div).show();
