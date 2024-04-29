@@ -91,7 +91,8 @@ class EChartsHooks implements
 		$width = '100%';
 		$height = '400px';
 		$container_classes = '';
-
+		$jsonTitle = '';
+		
 		$json_parts = array();
 
 		// try to find a few specific parameters to the template call:
