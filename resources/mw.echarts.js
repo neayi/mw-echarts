@@ -163,6 +163,8 @@ var ECharts_controller = (function () {
 			switch (option?.tooltip?.formatter) {
 				case 'rotation':
 					// Show in the tooltip the description that accompanies this item
+					option.tooltip.extraCssText = "text-wrap: wrap;";
+					option.tooltip.className = "rotation-tooltip";
 					option.tooltip.formatter = (item) => {
 						return item.marker + "<b>" + item.name + "</b><br>" + item.data.description;
 					};
