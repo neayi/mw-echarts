@@ -166,11 +166,15 @@ class EChartsHooks implements
 		// keep a list of the postes in solde de gestion for later
 		$postesSoldeDeGestion = $definitions['Soldes de gestion']['Soldes de gestion']['postes'];
 
+		$stacks = [];
+
 		// merge postes and synonyms (autres postes) so that the graph can manage some other equivalent poste names
 		foreach ($definitions as $barstacks => $barStackElements)
 		{
 			foreach ($barStackElements as $name => $aCategory)
 			{
+				$stacks[$name] = $barstacks;
+
 				if (empty($aCategory['autres postes']))
 					continue;
 
@@ -180,6 +184,7 @@ class EChartsHooks implements
 
 		// Build an array of valid paramters:
 		$validParameters = array();
+		$validCategories = array();
 		foreach ($definitions as $barstacks => $barStackElements)
 		{
 			if ($barstacks == "Soldes de gestion")
@@ -187,6 +192,8 @@ class EChartsHooks implements
 
 			foreach ($barStackElements as $name => $aCategory)
 			{
+				$validCategories[strtolower($name)] = $name;
+
 				foreach ($aCategory['postes'] as $aPoste)
 					$validParameters[strtolower($aPoste)] = $aPoste;
 			}
@@ -218,11 +225,32 @@ class EChartsHooks implements
 					
 				default:
 					$matches = array();
-					if (preg_match('@^(.*) +([0-9]{4})@', $key, $matches)) {
-						$param = strtolower(trim($matches[1]));
+					if (preg_match('@^(.*) +([0-9-]{4,9})@', $key, $matches)) {
+						$category = '';
+						$param = trim($matches[1]);
+						$paramLowerCase = strtolower(trim($matches[1]));
 						$year = $matches[2];
 
-						if (!isset($validParameters[$param]))
+						$subparts = explode('/', trim($matches[1]));
+						if (count($subparts) == 2)
+						{
+							$category = strtolower(trim($subparts[0]));
+
+							if (!isset($validCategories[$category]))
+							{
+								$ret = "<pre>Cette catégorie n'est pas reconnue : '''$key'''\n\n";
+								$ret .= "Les paramètres doivent faire partie de la liste suivante :\n";
+								$ret .= "* " . implode("\n* ", $validCategories) . "\n</pre>";
+								return $ret;
+							}
+
+							$category = $validCategories[$category];
+
+							$param = trim($subparts[1]);
+							$paramLowerCase = strtolower($param);
+						}
+
+						if (!isset($validParameters[$paramLowerCase]) && empty($category))
 						{
 							$ret = "<pre>Ce paramètre n'est pas reconnu : '''$key'''\n\n";
 							$ret .= "Les paramètres doivent faire partie de la liste suivante :\n";
@@ -230,8 +258,16 @@ class EChartsHooks implements
 							return $ret;
 						}
 
+						if (!empty($category))
+						{
+							if (!in_array($param, $definitions[$stacks[$category]][$category]['postes']))
+								$definitions[$stacks[$category]][$category]['postes'][] = $param;
+							
+							$validParameters[$paramLowerCase] = $param;
+						}
+
 						// Also replace commas with dots for the sake of json
-						$parameters[$year][$validParameters[$param]] = (float)trim(str_replace(',', '.', $parts[1]));
+						$parameters[$year][$validParameters[$paramLowerCase]] = (float)trim(str_replace(',', '.', $parts[1]));
 					}
 					break;
 			}
@@ -484,7 +520,7 @@ class EChartsHooks implements
 					if ($posteToLookup == $aPoste)
 						return $name;
 			}
-		}
+		}	
 
 		return false;
 	}
