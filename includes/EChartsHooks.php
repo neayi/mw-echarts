@@ -401,6 +401,11 @@ class EChartsHooks implements
 				"textAlign" => "center",
 				"left" => "50%"
 			],
+			"legend" => [
+				"bottom" => "20",
+				"type" => "scroll",
+				"selectedMode" => "multiple"
+			],
 			"xAxis" => [
 				"type" => "category",
 				"data" => array_map('strval', array_keys($parameters)),

@@ -33,24 +33,22 @@ var ECharts_controller = (function () {
 				var option = "";
 				let div = this;
 
-				if (this.dataset.jsontitle)
-				{
+				if (this.dataset.jsontitle) {
 					let title = this.dataset.jsontitle;
 					$.ajax({
 						type: "GET",
 						url: '/wiki/' + encodeURIComponent(title),
-						data: {"action": "raw"},
+						data: { "action": "raw" },
 						dataType: 'json',
-						success: function( jsondata ){
-							self.buildChart(div, jsondata, title);							
+						success: function (jsondata) {
+							self.buildChart(div, jsondata, title);
 						}
-					});					
+					});
 				}
-				else 
-				{
+				else {
 					eval("option = " + this.textContent);
-					this.textContent = '';		
-					self.buildChart(div, option, "embedded");			
+					this.textContent = '';
+					self.buildChart(div, option, "embedded");
 				}
 			});
 
@@ -119,6 +117,7 @@ var ECharts_controller = (function () {
 								textAlign: 'center',
 								left: '50%'
 							},
+							legend: { show: false },
 							xAxis: { show: false },
 							yAxis: { show: false },
 							series: [drilldownData[anneeToShow][barreToShow]],
@@ -133,13 +132,43 @@ var ECharts_controller = (function () {
 							},
 							graphic: [
 								{
-									type: 'text',
-									left: 50,
-									top: 20,
-									style: {
-										text: '< Retour',
-										fontSize: 18
-									},
+									"type": 'group',
+									"left": 'center',
+									"bottom": 45,
+									"children": [
+										{
+											type: 'rect',
+											z: 100,
+											left: 'center',
+											top: 'middle',
+											shape: {
+												width: 290,
+												height: 25,
+												r: [7]
+											},
+											style: {
+												fill: '#fff',
+												stroke: '#555',
+												lineWidth: 1,
+												shadowBlur: 8,
+												shadowOffsetX: 3,
+												shadowOffsetY: 3,
+												shadowColor: 'rgba(0,0,0,0.2)'
+											}
+										},
+										{
+											type: 'text',
+											z: 100,
+											left: 'center',
+											top: 'middle',
+											style: {
+												fill: '#333',
+												width: 290,
+												text: "🔙 Revenir au bilan économique",
+												font: '14px Microsoft YaHei'
+											}
+										}
+									],
 									onclick: function () {
 										myChart.setOption(stackedBarsOptions, true);
 									}
@@ -154,7 +183,7 @@ var ECharts_controller = (function () {
 			});
 		},
 
-		buildChart: function(div, option, pageTitle) {
+		buildChart: function (div, option, pageTitle) {
 			if (!option) {
 				console.log("ECharts: the JSON could not be parsed. Make sure it starts and end with curly braces : { your json }");
 			}
@@ -179,7 +208,7 @@ var ECharts_controller = (function () {
 						return name + ' : ' + value + 'ha ' + percent;
 					};
 					break;
-				
+
 				default:
 					break;
 			}
