@@ -81,7 +81,7 @@ var ECharts_controller = (function () {
 
 				console.log(stackedBarsOptions);
 
-				if ($(this).css('width') > $( window ).width()) {
+				if ($(this).width() > $( window ).width()) {
 					$(this).css('width', '100%');
 					$(this).parent().css('width', '100%');
 				}
@@ -221,7 +221,7 @@ var ECharts_controller = (function () {
 			console.log("Chart stored in page " + pageTitle);
 			console.log(option);
 
-			if ($(div).css('width') > $( window ).width()) {
+			if ($(div).width() > $( window ).width()) {
 				$(div).css('width', '100%');
 				$(div).parent().css('width', '100%');
 			}
