@@ -131,7 +131,7 @@ class EChartsHooks implements
 
 		$thisId = self::$id++;
 
-		$ret = '<div id="echart_' . $thisId . '_container"  class="' . $container_classes . '" style="width:' . $width . '; height:' . $height . '"><div id="echart_' . $thisId . '" data-jsontitle="'.$jsonTitle.'" class="echarts_div" style="width:' . $width . '; height:' . $height . '; display:none;">' . $json . '</div></div>';
+		$ret = '<div id="echart_' . $thisId . '_container"  class="' . $container_classes . '" style="width:' . $width . '; height:' . $height . '"><div id="echart_' . $thisId . '" data-jsontitle="'.$jsonTitle.'" class="charts echarts_div" style="width:' . $width . '; height:' . $height . '; display:none;">' . $json . '</div></div>';
 
 		return $ret;
 	}
@@ -327,7 +327,7 @@ class EChartsHooks implements
 		$JS = json_encode($options, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 		$drilldownDataJSON = json_encode($drilldownData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
-		$ret = '<div id="echart_' . $thisId . '_container"  style="width:' . $width . '; height:' . $height . '"><div id="echart_' . $thisId . '" class="echarts_economical_div" style="width:' . $width . '; height:' . $height . '; display:none;">' . $JS . '</div></div>';
+		$ret = '<div id="echart_' . $thisId . '_container"  style="width:' . $width . '; height:' . $height . '"><div id="echart_' . $thisId . '" class="charts echarts_economical_div" style="width:' . $width . '; height:' . $height . '; display:none;">' . $JS . '</div></div>';
 		$ret .= '<div id="drilldownData_' . $thisId . '" style="display:none;">' . htmlentities($drilldownDataJSON) . '</div>';
 
 		return [$ret, 'noparse' => true, 'isHTML' => true];
