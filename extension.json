@@ -24,7 +24,8 @@
 			],
 			"dependencies": [
 				"jquery.ui",
-				"ext.echarts"
+				"ext.echarts",
+				"oojs-ui-core"
 			],
 			"targets": [
 				"desktop",
