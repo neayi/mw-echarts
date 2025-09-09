@@ -41,7 +41,24 @@ var ECharts_controller = (function () {
 						data: { "action": "raw" },
 						dataType: 'json',
 						success: function (jsondata) {
-							self.buildChart(div, jsondata, title);
+
+							if (jsondata.series == undefined) {
+								// This is not a standard ECharts chart, but a rotation chart
+
+								//Remove the height of the div
+								$(div).removeAttr('style');
+
+								$("#" + div.id + "_container").append('<div id="itk_text_'+div.id+'" style="width: 100%; margin: auto;"></div>');
+								let renderer = new RotationRenderer(div.id, 'itk_text_'+div.id, jsondata);
+								renderer.render();
+								$(div).show();								
+
+							} else {
+
+								self.buildChart(div, jsondata, title);
+
+							}
+
 						}
 					});
 				}

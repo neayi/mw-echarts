@@ -25,6 +25,7 @@
 			"dependencies": [
 				"jquery.ui",
 				"ext.echarts",
+				"ext.tika",
 				"oojs-ui-core"
 			],
 			"targets": [
@@ -39,6 +40,19 @@
 			"remoteExtPath": "ECharts/modules/ext.echarts",
 			"scripts": [
 				"echarts.min.js"
+			]
+		},
+		"ext.tika": {
+			"localBasePath": "modules/ext.tika",
+			"remoteExtPath": "ECharts/modules/ext.tika",
+			"dependencies": [
+				"ext.echarts"
+			],
+			"scripts": [
+				"chart-render.js"
+			],
+			"styles": [
+				"styles-rendering.css"
 			]
 		}
 	},

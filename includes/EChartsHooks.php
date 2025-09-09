@@ -44,7 +44,7 @@ class EChartsHooks implements
 	{
 
 		// Add the following to a wiki page to see how it works:
-		// {{#echarts: {some json} }}
+		// {{#echarts: title=Diagramme ombrothermique | width=500px | height=400px | align=right | json = Sandbox/Diagramme ombrothermique.json }}
 		$parser->setFunctionHook('echarts', [self::class, 'parserFunctionEcharts']);
 
 		// This parser function will show an economic chart on multiple years :
@@ -71,6 +71,9 @@ class EChartsHooks implements
 		// 	}}
 		$parser->setFunctionHook('economic_charts', [self::class, 'parserFunctionEconomicCharts']);
 
+		// $parser->setFunctionHook('itk', [self::class, 'parserFunctionITK']);
+		
+
 		return true;
 	}
 
@@ -84,7 +87,7 @@ class EChartsHooks implements
 	 */
 	public static function parserFunctionEcharts(Parser $parser, string $value, ...$args)
 	{
-		$parser->getOutput()->addModules(['ext.mwecharts']);
+		$parser->getOutput()->addModules(['ext.echarts', 'ext.tika', 'ext.mwecharts']);
 
 		array_unshift($args, $value);
 
@@ -131,7 +134,7 @@ class EChartsHooks implements
 
 		$thisId = self::$id++;
 
-		$ret = '<div id="echart_' . $thisId . '_container"  class="' . $container_classes . '" style="width:' . $width . '; height:' . $height . '"><div id="echart_' . $thisId . '" data-jsontitle="'.$jsonTitle.'" class="charts echarts_div" style="width:' . $width . '; height:' . $height . '; display:none;">' . $json . '</div></div>';
+		$ret = '<div id="echart_' . $thisId . '_container"  class="' . $container_classes . '" ><div id="echart_' . $thisId . '" data-jsontitle="'.$jsonTitle.'" class="charts echarts_div" style="width:' . $width . '; height:' . $height . '; display:none;">' . $json . '</div></div>';
 
 		return $ret;
 	}
@@ -146,7 +149,7 @@ class EChartsHooks implements
 	 */
 	public static function parserFunctionEconomicCharts(Parser $parser, string $value, ...$args)
 	{
-		$parser->getOutput()->addModules(['ext.mwecharts']);
+		$parser->getOutput()->addModules(['ext.echarts', 'ext.mwecharts']);
 
 		array_unshift($args, $value);
 
