@@ -4,5 +4,8 @@
 			"Bertrand Gorge"
 		]
 	},
-	"ECharts-desc": "{{desc|name=ECharts|url=https://github.com/neayi/mw-echarts}}"
+	"ECharts-desc": "{{desc|name=ECharts|url=https://github.com/neayi/mw-echarts}}",
+	"echarts-edit-graph": "A link to edit the chart (should be lower case)",
+	"echarts-edit-missing-graph": "When a chart doesn't exist yet"
+
 }

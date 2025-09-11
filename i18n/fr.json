@@ -4,5 +4,7 @@
 			"Bertrand Gorge"
 		]
 	},
-	"ECharts-desc": "Ajoute Apache ECharts dans les pages wiki"
+	"ECharts-desc": "Ajoute Apache ECharts dans les pages wiki",
+	"echarts-edit-graph": "modifier le graphique",
+	"echarts-edit-missing-graph": "Le graphique n'existe pas encore. Veuillez cliquer ici pour le créer dans l'éditeur."
 }

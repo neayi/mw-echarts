@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Itinéraire technique TIKA</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-ui@1.14.1/dist/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-ui@1.14.1/themes/base/jquery-ui.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/underscore@1.13.7/underscore-umd-min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="./js/chart-render.js"></script>
+    <script src="./js/editor-attributes.js"></script>
+    <script src="./js/editor-interventions.js"></script>
+    <script src="./js/editor-crops.js"></script>
+    <script src="./js/editor-export.js"></script>
+    <script src="./js/editor-wiki-editor.js"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="./css/styles-editor.css" rel="stylesheet">
+    <link href="./css/styles-rendering.css" rel="stylesheet">    
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-auto text-left main-header file-icons mb-2">
+                <button type="button" onclick="importFromJsonFile()" class="btn btn-outline-primary primary-button"
+                    id="importFromJsonButton"><i class="fa fa-upload" aria-hidden="true"></i> Charger (JSON)</button>
+                <button type="button" onclick="importFromTestJson()" class="btn btn-outline-primary primary-button"
+                    id="importFromExampleJsonButton"><i class="fa fa-upload" aria-hidden="true"></i> Charger un
+                    exemple</button>
+                <button type="button" onclick="exportToJsonFile(crops)"
+                    class="btn btn-outline-primary primary-button" id="exportToJsonButton"><i
+                        class="fa fa-download" aria-hidden="true"></i> Exporter</button>
+                <button type="button" onclick="wipe(crops)" class="btn btn-outline-primary primary-button"
+                    id="exportToJsonButton"><i class="fa fa-trash" aria-hidden="true"></i> Tout effacer</button>
+            </div>
+            <div class="col text-center main-header mb-2">
+                <h1 id="title" contenteditable="true" style="width: 100%">Itinéraire technique</h1>
+            </div>
+            <div class="col-auto text-right main-header file-icons mb-2">
+                <button type="button" class="btn btn-outline-primary primary-button"
+                    id="exportToJsonButton" data-bs-toggle="modal" data-bs-target="#modalParams"><i class="fa fa-cog" aria-hidden="true"></i> Réglages</button>
+            </div>            
+        </div>
+        <div class="row">
+            <div class="col col-12 col-lg-3 editor-view"> <!-- Editor zone-->
+
+                <div class="welcome-view" id="welcomeView">
+
+                    <div class="row">
+                        <div class="col-12">
+                            <p>Bienvenue dans l'éditeur</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="button" onclick="addNewStepClickEvent()"
+                                class="w-100 btn btn-outline-primary primary-button" id="addNewCropButton"><i
+                                    class="fa fa-plus-square" aria-hidden="true"></i>
+                                Ajouter une étape de rotation</button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="d-none welcome-view container px-4" id="cropListView">
+                    <div class="row">
+                        <div class="col-12">
+                            <p>Liste des étapes</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div id="cropsContainer" class="container"></div>
+                    </div>
+                    <div class="row">
+                        <button type="button" onclick="addNewStepClickEvent()"
+                            class="w-100 btn btn-outline-primary primary-button" id="addNewCropButton"><i
+                                class="fa fa-plus-square" aria-hidden="true"></i>
+                            Ajouter une étape de rotation</button>
+                    </div>
+                </div>
+
+                <div class="d-none" id="cropDetailView">
+                    <div class="row card-holder mb-2">
+                        <div class="col-12">
+                            <button class="float-end close-step-button close-step-times" ><i class="fa fa-times" aria-hidden="true"></i></button>
+                            <h4>Étape</h4>
+                            <form id="cropForm">
+                                <div class="row mb-2">
+                                    <div class="col">
+                                        <input type="text" id="cropName" class="form-control" placeholder="Nom de la culture">
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col">
+                                        <textarea type="text" id="cropDescription" class="form-control"
+                                            placeholder="Description" rows="4"></textarea>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-5 pe-0">
+                                        <label for="cropStartDate" class="form-label">Début</label>
+                                        <input type="date" id="cropStartDate" class="form-control">
+                                    </div>
+                                    <div class="col-5 pe-0">
+                                        <label for="cropEndDate" class="form-label">Fin</label>
+                                        <input type="date" id="cropEndDate" class="form-control">
+                                    </div>
+                                    <div class="col-2 d-flex align-items-end">
+                                        <label for="cropColor" class="form-label"></label>
+                                        <input type="color" id="cropColor" class="form-control form-control-color w-100">
+                                    </div>
+                                </div>
+                                <div class="row"><div id="itk-api-comment" class="col text-center text-muted small"></div></div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="row card-holder attributes-view mb-2">
+                        <div class="col-12">
+                            <h5>Attributs</h5>
+                            <div class="row">
+                                <div id="attributesContainer" class="container"></div>
+                            </div>
+                            <button id="newAttributeButton" type="button" onclick="createAttributForm()"
+                                class="btn btn-primary primary-button w-100"><i class="fa fa-plus-square"
+                                    aria-hidden="true"></i> Ajouter</button>
+                            <div id="newAttributeContainer"></div>
+                        </div>
+                    </div>
+                    <div class="row card-holder">
+                        <div class="col-12">
+                            <h5>Interventions</h5>
+                            <div class="row">
+                                <p id="interventionsTopName" class="h6"></p>
+                                <div id="interventionsTopContainer" class="container"></div>
+                            </div>
+                            <hr class="my-2">
+                            <div class="row">
+                                <p id="interventionsBottomName" class="h6"></p>
+                                <div id="interventionsBottomContainer" class="container"></div>
+                            </div>
+
+                            <button id="newInterventionButton" type="button" onclick="createInterventionForm()"
+                                class="btn btn-primary primary-button w-100"><i class="fa fa-plus-square"
+                                    aria-hidden="true"></i> Ajouter</button>
+                            <div id="newInterventionContainer"></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="button"
+                                class="w-100 btn btn-outline-primary primary-button mt-2 close-step-button">Retour à la liste des
+                                étapes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rendering zone -->
+            <div class="col col-12 col-lg-9">
+                <div id="itk"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal fade" id="jsonErrorModal" tabindex="-1" aria-labelledby="jsonErrorModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="jsonErrorModalLabel">Erreur de chargement JSON</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="jsonErrorMessage">Une erreur s'est produite lors du chargement du fichier JSON.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmationModalLabel">Confirmation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Attention : des étapes existent déjà. Importer un nouvel itinéraire écrasera les données existantes.
+                    Voulez-vous continuer ?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                        id="cancelImport">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="confirmImport">Continuer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="modalParams" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Paramètres de l'itinéraire technique</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="regionInput" class="form-label">Région</label>
+                        <input type="text" class="form-control" id="regionInput" value="France">
+                    </div>
+                    <div class="mb-3">
+                        <label for="viewSelect" class="form-label">Affichage par défaut</label>
+                        <select class="form-select" id="viewSelect">
+                            <option value="horizontal">En frise</option>
+                            <option value="vertical">En donut</option>
+                        </select>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="showTranscriptCheckbox" checked>
+                        <label class="form-check-label" for="showTranscriptCheckbox">Afficher la transcription textuelle</label>
+                    </div>
+                    <div class="mb-3">
+                        <label for="topInterventionsTitle" class="form-label">Titre des interventions du haut</label>
+                        <input type="text" class="form-control" id="topInterventionsTitle" value="Contrôle adventices">
+                    </div>
+                    <div class="mb-3">
+                        <label for="bottomInterventionsTitle" class="form-label">Titre des interventions du bas</label>
+                        <input type="text" class="form-control" id="bottomInterventionsTitle" value="Autres interventions">
+                    </div>
+                    <div class="mb-3">
+                        <label for="stepsTitle" class="form-label">Titre des étapes de la rotation</label>
+                        <input type="text" class="form-control" id="stepsTitle" value="Étapes de la rotation dans la parcelle">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-primary" id="paramsModalSaveButton">Enregistrer les modifications</button>
+            </div>
+        </div>
+    </div>
+    </div>  
+</body>
+
+</html>
+
+<script>
+
+    const DEFAULT_TITLE = "Nouvel itinéraire technique";
+
+    let crops = {
+        "title": DEFAULT_TITLE,
+        "options": {
+            "view": "horizontal",
+            "show_transcript": true,
+            "title_top_interventions": "Contrôle adventices",
+            "title_bottom_interventions": "Autres interventions",
+            "title_steps": "Étapes de la rotation dans la parcelle",
+            "region": "France"
+        },
+        "steps": []
+    };
+
+    let selectedStep; // an instance of Crop
+
+    initializeOptions();
+
+    function initializeOptions() {
+        document.getElementById("title").textContent = crops.title;
+        document.getElementById("interventionsTopName").textContent = crops.options.title_top_interventions;
+        document.getElementById("interventionsBottomName").textContent = crops.options.title_bottom_interventions;
+
+        attachCropInputListeners();
+        enableTitleEditing();
+
+        $('.close-step-button').click(function() {
+            displayCropListView();
+        });
+       
+        $(function() {
+            $('#cropForm').on('keydown', function(e) {
+                // Prevent form submit on Enter, but allow Enter in textarea
+                if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        });
+
+        // Make cropsContainer sortable
+        $("#cropsContainer").sortable({
+            handle: '.drag-handle',
+            axis: 'y',
+            update: function (event, ui) {
+                // Set new order
+                let movedStepId = ui.item.data('id');
+                let lastStepEnd = null;
+
+                let newOrder = [];
+                $(event.target).children('.step-row').each(function () {
+                    let id = $(this).data('id');
+
+                    let step = crops.steps.find(function (crop) { return crop.id == id });
+
+                    if (movedStepId == id) {
+                        let movedStep = new StepModel(step);
+                        let duration = movedStep.getDurationInDays();
+
+                        if (lastStepEnd != null) { 
+                            lastStepEnd.setDate(lastStepEnd.getDate() + 1);
+
+                            movedStep.setStartDate(lastStepEnd);
+                            movedStep.setDurationInDays(duration);
+                        } else {
+                            // This is the first step in the list, set its start date before the previously first step start date
+                            let nextStep = crops.steps[0];
+                            let newStartDate = new Date(nextStep.startDate.valueOf());
+                            newStartDate.setDate(newStartDate.getDate() - duration);
+                            movedStep.setStartDate(newStartDate);
+                            movedStep.setDurationInDays(duration);
+                        }
+
+                        step = movedStep.getStep();
+                    }
+                    else {
+                        lastStepEnd = new Date(step.endDate.valueOf());
+                    }
+
+                    newOrder.push(step);
+                });
+
+                crops.steps = newOrder;
+
+                refreshAllTables();
+            }
+        });
+
+
+        $('#paramsModal').on('show.bs.modal', function (event) {
+
+            // Set the modal form inputs values from crops.options
+            $("#viewSelect").val(crops.options.view);
+            $("#showTranscriptCheckbox").prop("checked", crops.options.show_transcript);
+            $("#topInterventionsTitle").val(crops.options.title_top_interventions);
+            $("#bottomInterventionsTitle").val(crops.options.title_bottom_interventions);
+            $("#stepsTitle").val(crops.options.title_steps);
+            $("#regionInput").val(crops.options.region);
+        });
+
+        $("#paramsModalSaveButton").click(function () {
+            crops.options.view = $("#viewSelect").val();
+            crops.options.show_transcript = $("#showTranscriptCheckbox").prop("checked");
+            crops.options.title_top_interventions = $("#topInterventionsTitle").val();
+            crops.options.title_bottom_interventions = $("#bottomInterventionsTitle").val();
+            crops.options.title_steps = $("#stepsTitle").val();
+            crops.options.region = $("#regionInput").val();
+
+            // Close the modal:
+            let modal = bootstrap.Modal.getInstance(document.getElementById('modalParams'));
+            modal.hide();
+
+            refreshAllTables();
+        });
+
+        let we = new WikiEditor();
+    }
+
+    class StepModel {
+        constructor(step) {
+            this.step = step; // keep a reference to the original object
+
+            this.step.id = step.id ?? crypto.randomUUID();
+            this.step.name = step.name ?? "Nouvelle culture";
+            this.step.color = step.color ?? "#0db3bf";
+            this.step.startDate = step.startDate ? new Date(step.startDate) : new Date();
+            this.step.endDate = step.endDate ? new Date(step.endDate) : new Date();
+            this.step.description = step.description ?? "";
+            this.step.interventions = step.interventions?.map(i => new Intervention(i.day, i.name, i.type, i.description)) || [];
+            this.step.attributes = step.attributes?.map(a => new Attribute(a.name, a.value)) || [];
+
+            this.step.useDefaultColor = step.useDefaultColor ?? true;
+            this.step.useDefaultStartDate = step.useDefaultStartDate ?? true;
+            this.step.useDefaultEndDate = step.useDefaultEndDate ?? true;
+        }
+
+        getStep() {
+            return this.step;
+        }
+
+        setStartDate(date) {
+            this.step.startDate = new Date(date);
+        }
+
+        setDurationInMonths(durationInMonths) {
+            this.step.endDate = new Date(this.step.startDate);
+            this.step.endDate.setMonth(this.step.startDate.getMonth() + durationInMonths);
+        }
+
+        setDurationInDays(durationInDays) {
+            this.step.endDate = new Date(this.step.startDate);
+            this.step.endDate.setDate(this.step.startDate.getDate() + durationInDays);
+        }
+
+        getDurationInDays() {
+            const diffTime = Math.abs(this.step.endDate - this.step.startDate);
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        addIntervention(day, name, type, description) {
+            let intervention = new Intervention(day, name, type, description);
+            this.step.interventions.push(intervention);
+        }
+
+        addAttribute(key, value) {
+            let attribute = new Attribute(key, value);
+            this.step.attributes.push(attribute);
+        }
+
+        updateAttribute(attributeId, key, value) {
+            this.step.attributes = this.step.attributes.map(function (attribute) {
+                if (attribute.id == attributeId) {
+                    attribute.name = key;
+                    attribute.value = value;
+                }
+                return attribute;
+            });
+        }
+
+        removeAttribute(attributeId) {
+            this.step.attributes = this.step.attributes.filter(function (attribute) { return attribute.id != attributeId });
+        }
+
+        updateIntervention(interventionId, day, name, type, description) {
+            let intervention = this.step.interventions.find((it) => it.id == interventionId);
+
+            if (intervention != undefined) {
+                intervention.day = day;
+                intervention.name = name;
+                intervention.type = type;
+                intervention.description = description;
+            }
+        }
+
+        removeIntervention(interventionId) {
+            this.step.interventions = this.step.interventions.filter(function (intervention) { return intervention.id != interventionId });
+        }
+
+        updateFromForm() {
+            this.step.name = getInputValue("cropName");
+            this.step.description = getInputValue("cropDescription");
+            this.step.startDate = new Date(getInputValue("cropStartDate"));
+            this.step.endDate = new Date(getInputValue("cropEndDate"));
+            this.step.color = getInputValue("cropColor");
+        }
+    }
+
+    class Intervention {
+        constructor(day, name, type, description) {
+            this.id = crypto.randomUUID();
+            this.day = day;
+            this.name = name || "";
+            this.type = type;
+            this.description = description || "";
+        }
+    }
+
+    class Attribute {
+        constructor(name, value) {
+            this.id = crypto.randomUUID();
+            this.name = name || "";
+            this.value = value || "";
+        }
+    }
+    
+    function updateSelectedStepColor() {
+        selectedStep.step.useDefaultColor = false;
+
+        selectedStep.updateFromForm();
+
+        refreshAllTables();
+    }
+
+    function updateSelectedStepStartDate() {
+        selectedStep.step.useDefaultStartDate = false;
+
+        selectedStep.updateFromForm();
+
+        refreshAllTables();
+    }
+
+    
+    function updateSelectedStepEndDate() {
+        selectedStep.step.useDefaultEndDate = false;
+
+        selectedStep.updateFromForm();
+
+        refreshAllTables();
+    }
+
+    function updateSelectedStep() {
+        selectedStep.updateFromForm();
+
+        refreshAllTables();
+    }
+
+    function getInputValue(elementId) {
+        return document.getElementById(elementId).value;
+    }
+
+    function setInputValue(elementId, value) {
+        document.getElementById(elementId).value = value;
+    }
+
+    function refreshAllTables() {
+        refreshStepsButtonList();
+        refreshAttributesTable();
+        refreshInterventionsTable();
+        renderChart();
+    }
+
+    function displayView(viewsToShow, viewsToHide) {
+        viewsToShow.forEach(view => document.querySelector(view).classList.remove("d-none"));
+        viewsToHide.forEach(view => document.querySelector(view).classList.add("d-none"));
+    }
+
+    function displayCropDetailView() {
+        displayView(["#cropDetailView"], ["#welcomeView", "#cropListView"]);
+    }
+
+    function displayCropListView() {
+        displayView(["#cropListView"], ["#welcomeView", "#cropDetailView"]);
+    }
+
+    function renderChart() {
+        let renderer = new RotationRenderer('itk', crops);
+        renderer.render();
+
+        $('.step-edit').click(function (event) {
+            event.stopPropagation();
+            let stepId = renderer.getElementID(event.target.closest('.rotation_item'));;
+            
+            let index = stepId.split('_')[1];
+            selectedStep = new StepModel(crops.steps[index]);
+            // populateCropDetailView(selectedStep);
+            // displayCropDetailView();
+            SelectStep(selectedStep);
+        });
+    }
+
+    function getRotationEndDate() {
+        let latestEndDate = null;
+        crops.steps.forEach(function (crop) {
+            if (latestEndDate == null || crop.endDate > latestEndDate) {
+                latestEndDate = crop.endDate;
+            }
+        });
+
+        // Clone the date to avoid reference issues
+        if (latestEndDate == null)
+            latestEndDate = new Date();
+        else {
+            latestEndDate = new Date(latestEndDate.valueOf());
+
+            // Move to the next day
+            latestEndDate.setDate(latestEndDate.getDate() + 1);
+        }
+
+        return latestEndDate;
+    }
+
+    function addEditAndRemoveButtons(rowDiv, deleteId, editFunction, deleteFunction) {
+        rowDiv = $(rowDiv);
+
+        let actionContainer = $('<div class="col-auto edit-buttons"></div>');
+
+        actionContainer.append($('<button class="btn btn-outline-danger float-end"><i class="fa fa-trash"></i></button>').click(function (event) {
+            event.stopPropagation(); // Prevent other onclick events from triggering
+            deleteFunction(deleteId);
+        }));
+
+        actionContainer.append($('<button class="edit-button btn btn-outline-primary float-end me-1"><i class="fa fa-pencil"></i></button>').click(function (event) {
+            event.stopPropagation(); // Prevent other onclick events from triggering
+            editFunction();
+        }));
+
+        rowDiv.append(actionContainer);
+    }
+
+    function getAndCleanElement(elementId) {
+        let element = document.getElementById(elementId);
+        element.innerHTML = "";
+        return element;
+    }
+
+    function reloadCropsFromJson(cropsFromJson) {
+        console.log("Données JSON importées :", cropsFromJson);
+
+        crops = cropsFromJson;
+
+        initializeOptions();
+        refreshAllTables();
+        displayCropListView();
+    }
+
+    function getChatGPTInfoFromCropName() {
+
+        if (selectedStep.step.useDefaultColor == false &&
+            selectedStep.step.useDefaultStartDate == false &&
+            selectedStep.step.useDefaultEndDate == false) {
+            // If the user has modified all fields, do not call the API again
+            $('#itk-api-comment').text('');
+            console.log("All fields modified by user, skipping API call");
+            return;
+        }
+
+        let newCropName = $("#cropName").val();
+
+        $('#itk-api-comment').html('<i class="fa fa-spinner fa-spin"></i> ...');
+
+        $.ajax({
+            url: "https://itk-info.tripleperformance.fr/api/culture",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                culture: newCropName,
+                region: crops.options.region ?? "France"
+            }),
+            success: function(data) {
+                console.log("Réponse:", data);
+                    
+                if (data.color_hex && selectedStep.step.useDefaultColor) {
+                    setInputValue("cropColor", data.color_hex);
+                    updateSelectedStep();
+                }
+        
+                let startDate = new Date();
+                if (data.average_sowing_date && selectedStep.step.useDefaultStartDate) {
+                    // data.average_sowing_date is in MM-DD format, we need to convert it to YYYY-MM-DD
+                    // for the current year
+                    let currentYear = new Date().getFullYear();
+                    startDate = new Date(`${currentYear}-${data.average_sowing_date}`);
+                    // If the start date is before today, it means the crop starts next year
+                    if (startDate < new Date()) {
+                        startDate.setFullYear(startDate.getFullYear() + 1);
+                    }
+                    setInputValue("cropStartDate", startDate.toISOString().split('T')[0]);
+                    updateSelectedStep();
+                }
+
+                if (data.end_of_season && selectedStep.step.useDefaultEndDate) {
+                    // data.end_of_season is in MM-DD format, we need to convert it to YYYY-MM-DD
+                    // for the current year
+                    let currentYear = new Date().getFullYear();
+                    let endDate = new Date(`${currentYear}-${data.end_of_season}`);
+                    // If the end date is before the start date, it means the crop ends the next year
+                    if (endDate < startDate) {
+                        endDate.setFullYear(startDate.getFullYear() + 1);
+                    }
+
+                    setInputValue("cropEndDate", endDate.toISOString().split('T')[0]);
+                    updateSelectedStep();
+                }
+                  
+                if (data.source_explanation) {
+                    $('#itk-api-comment').text(data.source_explanation);
+                } else {
+                    $('#itk-api-comment').text('');
+                }
+
+                // {
+                //     "culture": "Colza",
+                //     "region": "France",
+                //     "average_sowing_date": "08-15",
+                //     "end_of_season": "07-15",
+                //     "color_hex": "#FFD700",
+                //     "confidence": "high",
+                //     "source_explanation": "Colza is typically sown in late summer and harvested in mid-summer in France."
+                // }
+
+            },
+            error: function(err) {
+                console.error("Erreur:", err);
+            }
+        });        
+    }
+
+    function attachCropInputListeners() {
+        $("#cropName").on("input", _.debounce(getChatGPTInfoFromCropName, 1000));
+
+        $("#cropName").on("input", _.debounce(updateSelectedStep, 500));
+        $("#cropDescription").on("input", _.debounce(updateSelectedStep, 500));
+        $("#cropStartDate").on("change", _.debounce(updateSelectedStepStartDate, 500));
+        $("#cropEndDate").on("change", _.debounce(updateSelectedStepEndDate, 500));
+        $("#cropColor").on("input", _.debounce(updateSelectedStepColor, 500));
+    }
+
+    function enableTitleEditing() {
+        document.getElementById("title").addEventListener("blur", function () {
+            if (this.textContent.trim() === "") {
+                this.textContent = DEFAULT_TITLE;
+            }
+            crops.title = this.textContent;
+        });
+    }
+
+</script>

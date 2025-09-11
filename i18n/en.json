@@ -4,5 +4,8 @@
 			"Bertrand Gorge"
 		]
 	},
-	"ECharts-desc": "Adds the Apache ECharts in wiki pages"
+	"ECharts-desc": "Adds the Apache ECharts in wiki pages",
+    "echarts-edit-graph": "edit the chart",
+	"echarts-edit-missing-graph": "The chart does not exist yet. Please click here to create it in the editor."
+
 }

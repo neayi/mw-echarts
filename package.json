@@ -1,10 +1,10 @@
 {
 	"private": true,
 	"dependencies": {
-		"@osfarm/itineraire-technique": "^1.0.0",
+		"@osfarm/itineraire-technique": "^1.1.0",
 		"echarts": "^5.4.3"
 	},
 	"scripts": {
-		"build": "cp node_modules/@osfarm/itineraire-technique/js/chart-render.js modules/ext.tika/ && cp node_modules/@osfarm/itineraire-technique/css/styles-rendering.css modules/ext.tika/ && cp node_modules/echarts/dist/echarts.common.min.js modules/ext.echarts/ && cp node_modules/echarts/dist/echarts.esm.min.js modules/ext.echarts/ && cp node_modules/echarts/dist/echarts.min.js modules/ext.echarts/"
+		"build": "cp node_modules/@osfarm/itineraire-technique/js/chart-render.js modules/ext.tika/ && cp node_modules/@osfarm/itineraire-technique/css/styles-rendering.css modules/ext.tika/ && cp node_modules/echarts/dist/echarts.common.min.js modules/ext.echarts/ && cp node_modules/echarts/dist/echarts.esm.min.js modules/ext.echarts/ && cp node_modules/echarts/dist/echarts.min.js modules/ext.echarts/ && cp -r node_modules/@osfarm/itineraire-technique/* editor"
 	}
 }

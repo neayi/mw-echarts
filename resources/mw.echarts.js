@@ -35,9 +35,11 @@ var ECharts_controller = (function () {
 
 				if (this.dataset.jsontitle) {
 					let title = this.dataset.jsontitle;
+					let jsonPageURL = '/wiki/' + encodeURIComponent(title);
+
 					$.ajax({
 						type: "GET",
-						url: '/wiki/' + encodeURIComponent(title),
+						url: jsonPageURL,
 						data: { "action": "raw" },
 						dataType: 'json',
 						success: function (jsondata) {
@@ -47,18 +49,34 @@ var ECharts_controller = (function () {
 
 								//Remove the height of the div
 								$(div).removeAttr('style');
+								$("#" + div.id + "_container").removeAttr('style');
 
-								$("#" + div.id + "_container").append('<div id="itk_text_'+div.id+'" style="width: 100%; margin: auto;"></div>');
-								let renderer = new RotationRenderer(div.id, 'itk_text_'+div.id, jsondata);
+								let renderer = new RotationRenderer(div.id, jsondata);
 								renderer.render();
-								$(div).show();								
+								$(div).show();
+
+								// Add an edit button when the user is connected and has edit rights (wgIsProbablyEditable is the quick and dirty trick for that): 
+								self.addEditButton(div.id, title);
 
 							} else {
-
 								self.buildChart(div, jsondata, title);
-
 							}
 
+						},
+						error: function(xhr, error, e) {
+							if (xhr.status == 404) {
+								// The page may not exist yet - let's suggest to create it:
+								self.addEditButton(div.id, title);
+								if (mw.config.get('wgIsProbablyEditable')) {
+									$(div).show();
+									$(div).append(`<div style="text-align: center;margin: auto 10%;background-color: #CCC;height: 300px;padding-top: 135px;">
+										<a target="_blank" href="/extensions/ECharts/editor/editor.html?wiki=${encodeURIComponent(title)}" class="mw-editsection-visualeditor" title="${mw.msg('echarts-edit-graph')}">${mw.msg('echarts-edit-missing-graph')}</a>
+									</div>`);
+								} else {
+									// If the page is not editable just remove the graph from the DOM
+									$("#" + div.id + "_container").remove();
+								}
+							}
 						}
 					});
 				}
@@ -249,9 +267,16 @@ var ECharts_controller = (function () {
 
 			// Display the chart using the configuration items and data just specified.
 			myChart.setOption(option);
+		},
+
+		addEditButton: function(divId, title) {
+			if (mw.config.get('wgIsProbablyEditable')) {
+				$("#" + divId + "_container").prepend(`<span class="mw-editsection">
+					<span class="mw-editsection-bracket">[</span><a target="_blank" href="/extensions/ECharts/editor/editor.html?wiki=${encodeURIComponent(title)}" class="mw-editsection-visualeditor" title="${mw.msg('echarts-edit-graph')}">${mw.msg('echarts-edit-graph')}</a>
+					<span class="mw-editsection-bracket">]</span></span>`);
+			}	
 		}
-
-
+		
 	}; // return line 26
 }());
 

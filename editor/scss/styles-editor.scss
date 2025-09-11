@@ -1,0 +1,106 @@
+$button-color: green;
+$button-hover-color: rgb(2, 102, 2);
+$button-text-color: white;
+$header-height: 3rem;
+
+.main-header {
+    background-color: green;
+    color: white;
+    height: $header-height;
+
+    display: flex;
+    align-items: center;
+}
+
+.editor-view {
+    overflow-y: auto;
+
+    //scrollbar only for the editor
+    height: calc(100vh - #{$header-height + 1rem});
+}
+
+// Add a button in the rotation to edit right from the transcript
+.rotation_item {
+    .step-edit {
+        color: #878787;
+        cursor: pointer;
+        display:none;
+        margin-left: 10px;
+        font-size: 70%;
+        vertical-align: super;
+    }
+
+    &:hover .step-edit {
+        display: inline !important;
+    }
+}
+
+.welcome-view {
+    background-color: rgb(169, 233, 169);
+    color: green;
+    padding: 1rem;
+    margin-top: 1rem;
+    border-radius: 1rem;
+}
+
+.card-white {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 1rem;
+}
+
+.card-holder {
+    background-color: whitesmoke;
+    padding: 1rem;
+    border-radius: 1rem;
+    margin: auto
+}
+
+.editable-row {
+    background-color: #f7f7f7;
+    min-height: 3rem;
+
+    display: flex;
+    align-items: center;
+
+    border-radius: 0.5rem;
+
+    .edit-buttons {
+        visibility: hidden;
+    }
+
+    &:hover > .edit-buttons {
+        visibility: visible;
+    }
+}
+
+.primary-button {
+    color: $button-text-color;
+    background-color: $button-color;
+    border: $button-color;
+
+    &:hover {
+        background-color: $button-hover-color;
+    }
+}
+
+
+.close-step-times {
+    background: none;
+    border: none;
+    color: #878787;
+    font-size: 120%;
+
+    &:hover {
+        color: #494949;
+    }
+}
+
+#cropsContainer .drag-handle {
+    color: #CCC;
+    font-weight: normal;
+    font-size: 86%;
+    margin-right: 10px;
+    vertical-align: middle;
+    cursor: grab;
+}

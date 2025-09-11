@@ -71,9 +71,6 @@ class EChartsHooks implements
 		// 	}}
 		$parser->setFunctionHook('economic_charts', [self::class, 'parserFunctionEconomicCharts']);
 
-		// $parser->setFunctionHook('itk', [self::class, 'parserFunctionITK']);
-		
-
 		return true;
 	}
 
@@ -134,7 +131,7 @@ class EChartsHooks implements
 
 		$thisId = self::$id++;
 
-		$ret = '<div id="echart_' . $thisId . '_container"  class="' . $container_classes . '" ><div id="echart_' . $thisId . '" data-jsontitle="'.$jsonTitle.'" class="charts echarts_div" style="width:' . $width . '; height:' . $height . '; display:none;">' . $json . '</div></div>';
+		$ret = '<div id="echart_' . $thisId . '_container"  class="' . $container_classes . '" style="width:' . $width . '; height:' . $height . '"><div id="echart_' . $thisId . '" data-jsontitle="'.$jsonTitle.'" class="charts echarts_div" style="width:' . $width . '; height:' . $height . '; display:none;">' . $json . '</div></div>';
 
 		return $ret;
 	}

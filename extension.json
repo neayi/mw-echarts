@@ -33,6 +33,8 @@
 				"mobile"
 			],
 			"messages": [
+				"echarts-edit-graph",
+				"echarts-edit-missing-graph"
 			]
 		},
 		"ext.echarts": {
