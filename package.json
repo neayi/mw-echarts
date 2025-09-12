@@ -1,7 +1,7 @@
 {
 	"private": true,
 	"dependencies": {
-		"@osfarm/itineraire-technique": "^1.1.0",
+		"@osfarm/itineraire-technique": "^1.1.3",
 		"echarts": "^5.4.3"
 	},
 	"scripts": {
