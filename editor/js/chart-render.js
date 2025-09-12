@@ -13,13 +13,13 @@ class RotationRenderer {
         if (Array.isArray(rotationData)) {
             this.hasTimeline = true;
             rotationData = rotationData.map((item) => {
-                return this.fixRotationData(item);
+                this.fixRotationData(item);
             });
             this.chartOptions = rotationData[0].options;
         }
         else {
             this.hasTimeline = false;
-            rotationData = this.fixRotationData(rotationData);
+            this.fixRotationData(rotationData);
             this.chartOptions = rotationData.options;
         }
 
@@ -925,8 +925,4 @@ class RotationRenderer {
     }
 }
 
-
-// Les mois ne sont pas bien affichés
-// Les dates ne correspondent pas à la rotation (2023 ???) 
-// Les trous dans la rotation ne sont pas affichés correctement
-
+window.RotationRenderer = RotationRenderer;

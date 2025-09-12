@@ -51,7 +51,7 @@ var ECharts_controller = (function () {
 								$(div).removeAttr('style');
 								$("#" + div.id + "_container").removeAttr('style');
 
-								let renderer = new RotationRenderer(div.id, jsondata);
+								let renderer = new window.RotationRenderer(div.id, jsondata);
 								renderer.render();
 								$(div).show();
 
