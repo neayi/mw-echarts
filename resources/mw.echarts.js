@@ -271,7 +271,7 @@ var ECharts_controller = (function () {
 
 		addEditButton: function(divId, title) {
 			if (mw.config.get('wgIsProbablyEditable')) {
-				$("#" + divId + "_container").prepend(`<span class="mw-editsection">
+				$("#" + divId + "_container").append(`<span class="mw-editsection">
 					<span class="mw-editsection-bracket">[</span><a target="_blank" href="/extensions/ECharts/editor/editor.html?wiki=${encodeURIComponent(title)}" class="mw-editsection-visualeditor" title="${mw.msg('echarts-edit-graph')}">${mw.msg('echarts-edit-graph')}</a>
 					<span class="mw-editsection-bracket">]</span></span>`);
 			}	
