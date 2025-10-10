@@ -1,16 +1,43 @@
 {
-  "name": "@osfarm/itineraire-technique",
-  "version": "1.1.4",
-  "description": "A visualisation tool to show agricultural technical itineraries based on Echarts",
-  "main": "editor.html",
-  "scripts": {
-    "build:scss": "sass --style=compressed scss/styles-editor.scss css/styles-editor.css && sass --style=compressed scss/styles-rendering.scss css/styles-rendering.css",
-    "dev:scss": "sass scss/styles-editor.scss css/styles-editor.css && sass scss/styles-rendering.scss css/styles-rendering.css",
-    "watch:scss": "sass --watch scss/styles-editor.scss:css/styles-editor.css scss/styles-rendering.scss:css/styles-rendering.css",
-    "build": "npm run build:scss",
-    "start": "npm run watch:scss"
+  "_from": "@osfarm/itineraire-technique@1.1.6",
+  "_id": "@osfarm/itineraire-technique@1.1.6",
+  "_inBundle": false,
+  "_integrity": "sha512-lRS1Xid55LfMBo8m9XVkQvFKA1kDu68R1q6/fbODQLL4yOVvJO2SD//zYGNvKumte/5MTbWY07Q9qKpz7MsRIw==",
+  "_location": "/@osfarm/itineraire-technique",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "@osfarm/itineraire-technique@1.1.6",
+    "name": "@osfarm/itineraire-technique",
+    "escapedName": "@osfarm%2fitineraire-technique",
+    "scope": "@osfarm",
+    "rawSpec": "1.1.6",
+    "saveSpec": null,
+    "fetchSpec": "1.1.6"
   },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/@osfarm/itineraire-technique/-/itineraire-technique-1.1.6.tgz",
+  "_shasum": "1940b270d22317d73f7dd9707ab6afdb696454d3",
+  "_spec": "@osfarm/itineraire-technique@1.1.6",
+  "_where": "/home/bertrand/3perf-mw1.43/html/extensions/ECharts",
+  "bundleDependencies": false,
+  "deprecated": false,
+  "description": "A visualisation tool to show agricultural technical itineraries based on Echarts",
   "devDependencies": {
     "sass": "^1.85.1"
-  }
+  },
+  "main": "editor.html",
+  "name": "@osfarm/itineraire-technique",
+  "scripts": {
+    "build": "npm run build:scss",
+    "build:scss": "sass --style=compressed scss/styles-editor.scss css/styles-editor.css && sass --style=compressed scss/styles-rendering.scss css/styles-rendering.css",
+    "dev:scss": "sass scss/styles-editor.scss css/styles-editor.css && sass scss/styles-rendering.scss css/styles-rendering.css",
+    "start": "npm run watch:scss",
+    "watch:scss": "sass --watch scss/styles-editor.scss:css/styles-editor.css scss/styles-rendering.scss:css/styles-rendering.css"
+  },
+  "version": "1.1.6"
 }
