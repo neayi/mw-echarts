@@ -1,28 +1,28 @@
 {
-  "_from": "@osfarm/itineraire-technique@1.1.6",
-  "_id": "@osfarm/itineraire-technique@1.1.6",
+  "_from": "@osfarm/itineraire-technique@1.1.8",
+  "_id": "@osfarm/itineraire-technique@1.1.8",
   "_inBundle": false,
-  "_integrity": "sha512-lRS1Xid55LfMBo8m9XVkQvFKA1kDu68R1q6/fbODQLL4yOVvJO2SD//zYGNvKumte/5MTbWY07Q9qKpz7MsRIw==",
+  "_integrity": "sha512-P/4gKfk6La4kTA87xXwVCZazGPfO/vxY1b83JzZuWE/RZ2neFosb4ldU/V5BZv0U4ndPORgWRCFMxVxoCIN6Gw==",
   "_location": "/@osfarm/itineraire-technique",
   "_phantomChildren": {},
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "@osfarm/itineraire-technique@1.1.6",
+    "raw": "@osfarm/itineraire-technique@1.1.8",
     "name": "@osfarm/itineraire-technique",
     "escapedName": "@osfarm%2fitineraire-technique",
     "scope": "@osfarm",
-    "rawSpec": "1.1.6",
+    "rawSpec": "1.1.8",
     "saveSpec": null,
-    "fetchSpec": "1.1.6"
+    "fetchSpec": "1.1.8"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/@osfarm/itineraire-technique/-/itineraire-technique-1.1.6.tgz",
-  "_shasum": "1940b270d22317d73f7dd9707ab6afdb696454d3",
-  "_spec": "@osfarm/itineraire-technique@1.1.6",
+  "_resolved": "https://registry.npmjs.org/@osfarm/itineraire-technique/-/itineraire-technique-1.1.8.tgz",
+  "_shasum": "15d61d80ecd7f41f66cf658027130de92c965db9",
+  "_spec": "@osfarm/itineraire-technique@1.1.8",
   "_where": "/home/bertrand/3perf-mw1.43/html/extensions/ECharts",
   "bundleDependencies": false,
   "deprecated": false,
@@ -39,5 +39,5 @@
     "start": "npm run watch:scss",
     "watch:scss": "sass --watch scss/styles-editor.scss:css/styles-editor.css scss/styles-rendering.scss:css/styles-rendering.css"
   },
-  "version": "1.1.6"
+  "version": "1.1.8"
 }
