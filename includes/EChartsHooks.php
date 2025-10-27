@@ -23,14 +23,15 @@
 
 namespace MediaWiki\Extension\ECharts;
 
-use OutputPage;
+use MediaWiki\Parser\Parser;
+use MediaWiki\Html\Html;
 use Skin;
-use Parser;
 
 class EChartsHooks implements
 	\MediaWiki\Hook\ParserFirstCallInitHook
 {
 	private static $id = 1;
+	private static $data = [];
 
 	/**
 	 * Register parser hooks to add the echarts keyword
@@ -70,6 +71,14 @@ class EChartsHooks implements
 		// 	| Prélèvements privés 2017 =
 		// 	}}
 		$parser->setFunctionHook('economic_charts', [self::class, 'parserFunctionEconomicCharts']);
+
+
+		// {{#pie_chart:
+		// 	  A = 25
+		// 	| B = 12
+		// 	| C = 15
+		// 	}}		
+		$parser->setFunctionHook('pie_chart', [self::class, 'parserFunctionPieChart']);
 
 		return true;
 	}
@@ -120,7 +129,7 @@ class EChartsHooks implements
 				case 'json':
 					$jsonTitle = trim($parts[1]);
 					break;
-	
+
 				default:
 					$json_parts[] = $v;
 					break;
@@ -333,6 +342,103 @@ class EChartsHooks implements
 		return [$ret, 'noparse' => true, 'isHTML' => true];
 	}
 	
+
+	/**
+	 * Parser function handler for {{#pie_chart: .. | .. }}
+	 *
+	 * @param Parser $parser
+	 * @param string $value
+	 * @param string ...$args
+	 * @return string HTML to insert in the page.
+	 */
+	public static function parserFunctionPieChart(Parser $parser, string $value, ...$args)
+	{
+		$parser->getOutput()->addModules(['ext.echarts', 'ext.mwecharts']);
+
+		array_unshift($args, $value);
+
+		$width = '450px';
+		$height = '300px';
+		$container_classes = "float-md-right";
+		$formatter = '{b} : {c} ({d}%)';
+		$jsonTitle = '';
+	 
+		// try to find a few specific parameters to the template call, and then check the validity of the other parameters:
+		foreach ($args as $k => $v) {
+			$parts = explode('=', $v);
+			$key = trim($parts[0]);
+
+			$paramYearParts = explode(' ', $key);
+			$param = $paramYearParts[0];
+
+			switch (strtolower($param)) {
+				case 'width':
+					$width = $parts[1];
+					if (strpos($width, 'px') === false)
+						$width .= 'px';
+					break;
+
+				case 'height':
+					$height = $parts[1];
+					if (strpos($height, 'px') === false)
+						$height .= 'px';
+					break;
+
+				case 'align':
+					switch (trim($parts[1])) {
+						case 'right':
+						case 'left':
+							$container_classes = "float-md-" . trim($parts[1]);
+							break;
+						
+						default:
+						case 'center':
+							$container_classes = "mx-auto";
+							break;
+					}
+					
+					break;
+
+				case 'formatter':
+					// formatter: '{a|{a}}{abg|}\n{hr|}\n  {b|{b}：}{c}  {per|{d}%}  '
+					$formatter = trim($parts[1]);
+					break;
+
+				case 'title':
+					break;
+					
+				default:
+					$parameters[$key] = (float)trim(str_replace(',', '.', $parts[1]));				
+					break;
+			}
+		}
+
+		$thisId = self::$id++;
+
+		// Store chart data for later injection via BeforePageDisplay hook
+		$chartData = [
+			'id' => $thisId,
+			'jsonTitle' => $jsonTitle,
+			'data' => $parameters,
+			'width' => $width,
+			'height' => $height,
+			'formatter' => $formatter
+		];
+		
+		$parser->getOutput()->addHeadItem(
+			Html::rawElement(
+				'script',
+				[],
+				'window.chartData_' . $thisId . ' = ' . json_encode($chartData) . ';'
+			)
+		);
+
+		$ret = '<div id="echart_' . $thisId . '_container"  class="' . $container_classes . '" style="width:' . $width . '; height:' . $height . '"><div id="echart_' . $thisId . '" class="charts pie_chart" data-chartId="'.$thisId.'" style="width:' . $width . '; height:' . $height . '; display:none;"></div></div>';
+
+		return [$ret, 'noparse' => true, 'isHTML' => true];
+	}
+	
+
 	private static function buildStackBarOptions($parameters, $definitions)
 	{
 		// Build the series:

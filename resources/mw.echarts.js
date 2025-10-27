@@ -29,6 +29,7 @@ var ECharts_controller = (function () {
 
 			var self = this;
 
+			// Find all rotations which expects JSON data from a wiki page
 			$('.echarts_div').each(function (element) {
 				var option = "";
 				let div = this;
@@ -220,6 +221,65 @@ var ECharts_controller = (function () {
 						myChart.setOption(treeMapOptions);
 					}
 				});
+			});
+
+			$('.pie_chart').each(function (element) {
+				let chartId = this.dataset.chartid;
+
+				var pieOptions = {
+					tooltip: {
+						trigger: 'item',
+						formatter: '{b} : {d}%'
+					},
+					legend: {
+						orient: 'vertical',
+						left: 'left',
+						top: 'center'
+					},   
+					series: [
+						{
+						type: 'pie',
+						radius: ['40%', '70%'],
+						center: ['65%', '50%'],
+						label: {
+							show: true,
+							position: 'inside'
+						},
+						data: []
+						}
+					]
+				};
+
+				let data = window['chartData_' + chartId]?.data;
+				data && Object.keys(data).forEach(function(key) {
+					pieOptions.series[0].data.push({
+						name: key,
+						value: data[key]
+					});
+				});
+
+				if (window['chartData_' + chartId]?.formatter.length > 0) {
+					let formatter = window['chartData_' + chartId].formatter;
+					pieOptions.tooltip.formatter = formatter;
+				}
+
+				if (!pieOptions) {
+					console.log("ECharts: the JSON could not be parsed.");
+				}
+
+				console.log(pieOptions);
+
+				if ($(this).width() > $( window ).width()) {
+					$(this).css('width', '100%');
+					$(this).parent().css('width', '100%');
+				}
+	
+				$(this).show();
+
+				var myChart = echarts.init(this);
+
+				// Display the chart using the configuration items and data just specified.
+				myChart.setOption(pieOptions);
 			});
 		},
 
