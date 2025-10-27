@@ -410,6 +410,7 @@ class EChartsHooks implements
 					break;
 
 				case 'title':
+					$jsonTitle = trim($parts[1]);
 					break;
 					
 				default:
