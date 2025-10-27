@@ -357,7 +357,9 @@ window.EChartsController = ECharts_controller;
 			// resize all charts when the windows is resized
 			$(window).on('resize', OO.ui.debounce(function() {
 				$(".charts").each(function(){
-					window.echarts. getInstanceByDom(this).resize();
+					let chartInstance = window.echarts.getInstanceByDom(this);
+					if (chartInstance)
+						chartInstance.resize();
 				});
 			}, 500));
 		});
