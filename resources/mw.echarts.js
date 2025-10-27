@@ -263,6 +263,13 @@ var ECharts_controller = (function () {
 					pieOptions.tooltip.formatter = formatter;
 				}
 
+				if (window['chartData_' + chartId]?.jsonTitle.length > 0) {
+					let jsonTitle = window['chartData_' + chartId].jsonTitle;
+					pieOptions.title = {
+						text: jsonTitle
+					};
+				}
+
 				if (!pieOptions) {
 					console.log("ECharts: the JSON could not be parsed.");
 				}
