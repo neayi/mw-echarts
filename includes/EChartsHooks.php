@@ -385,10 +385,15 @@ class EChartsHooks implements
 					break;
 
 				case 'align':
-					switch (trim($parts[1])) {
+					switch (strtolower(trim($parts[1]))) {
 						case 'right':
+						case 'droite':
+							$container_classes = "float-md-right";
+							break;
+
 						case 'left':
-							$container_classes = "float-md-" . trim($parts[1]);
+						case 'gauche':
+							$container_classes = "float-md-left";
 							break;
 						
 						default:
