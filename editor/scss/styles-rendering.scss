@@ -36,11 +36,11 @@ div.mainITKContainer {
 
             .bottom-transcript {
                 display: none;
-            }            
+            }
         }
     }
 
-    @container myparent (min-width: 1200px) {
+    @container myparent (min-width: 1000px) {
         &.withTranscript {
             .left-transcript {
                 display: block;
@@ -53,7 +53,7 @@ div.mainITKContainer {
 
             .bottom-transcript {
                 display: none;
-            }            
+            }
         }
     }
 
@@ -73,6 +73,7 @@ div.mainITKContainer {
 
         div.step-header {
             h4 {
+                font-size    : 20px;
                 margin-bottom: 0;
                 margin-top   : 0;
             }
@@ -80,7 +81,7 @@ div.mainITKContainer {
             div.step_dates {
                 font-size       : 11px;
                 background-color: #cdcccc;
-                color           : #ffffff;
+                color           : #000000;
                 margin          : 5px;
                 padding         : 2px 5px;
                 border-radius   : 5px;
@@ -168,5 +169,16 @@ div.mainITKContainer {
 }
 
 .rotation-tooltip {
-    max-width: 400px;
+    max-width : 400px;
+    text-align: left;
+
+    div.step_dates {
+        font-size       : 9px;
+        background-color: #cdcccc;
+        color           : #000000;
+        margin          : 5px;
+        padding         : 0px 5px;
+        border-radius   : 5px;
+        float: right;
+    }
 }
