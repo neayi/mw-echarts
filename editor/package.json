@@ -1,6 +1,6 @@
 {
   "name": "@osfarm/itineraire-technique",
-  "version": "1.1.19",
+  "version": "1.1.20",
   "description": "A visualisation tool to show agricultural technical itineraries based on Echarts",
   "main": "editor.html",
   "scripts": {
@@ -12,5 +12,25 @@
   },
   "devDependencies": {
     "sass": "^1.85.1"
-  }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/osfarm/itineraire-technique"
+  },
+  "homepage": "https://www.osfarm.org/itineraire-technique/",
+  "bugs": {
+    "url": "https://github.com/osfarm/itineraire-technique/issues"
+  },
+  "license": "MIT",
+  "keywords": [
+    "agriculture",
+    "echarts",
+    "visualization",
+    "farming",
+    "itineraire-technique",
+    "TIKA"
+  ]
 }

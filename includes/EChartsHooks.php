@@ -368,10 +368,7 @@ class EChartsHooks implements
 			$parts = explode('=', $v);
 			$key = trim($parts[0]);
 
-			$paramYearParts = explode(' ', $key);
-			$param = $paramYearParts[0];
-
-			switch (strtolower($param)) {
+			switch (strtolower($key)) {
 				case 'width':
 					$width = $parts[1];
 					if (strpos($width, 'px') === false)
@@ -410,11 +407,12 @@ class EChartsHooks implements
 					break;
 
 				case 'title':
+				case 'nom de la ferme':
 					$jsonTitle = trim($parts[1]);
 					break;
-					
+
 				default:
-					$parameters[$key] = (float)trim(str_replace(',', '.', $parts[1]));				
+					$parameters[$key] = (float)trim(str_replace(',', '.', $parts[1]));
 					break;
 			}
 		}
